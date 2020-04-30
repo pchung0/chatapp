@@ -2,6 +2,7 @@ import functools
 from flask import render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_socketio import join_room, leave_room
 from chatapp import app, socketio, login_manager, db
 from chatapp.form import RegistrationForm, LoginForm
 from chatapp.database import User
@@ -66,3 +67,11 @@ def authenticated_only(f):
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
     socketio.emit('my response', json)
+
+@socketio.on('create')
+@authenticated_only
+def handle_create(room):
+    uid = current_user.get_id()
+    join_room(room)
+    socketio.send(str(uid) + ' has entered the room.', room=room)
+
