@@ -1,3 +1,4 @@
+import functools
 from flask import render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -20,10 +21,8 @@ def register():
                     last_name=form.last_name.data,
                     username=form.username.data,
                     password=hased_password)
-
         db.session.add(user)
         db.session.commit()
-        print('suceed')
         return redirect(url_for('home'))
     else:
         print('fail')
@@ -35,21 +34,35 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        hased_password = User.query.filter_by(username=form.username.data).first()
-        if user and check_password_hash(form.password.data, user.password):
+        if user and check_password_hash(user.password, form.password.data):
             login_user(user)
             next = request.args.get('next')
+            flash('Login Suceed')
             return redirect(next or url_for('home'))
         else:
             flash('Login Failed')
     return render_template('login.html', form=form)
 
 
-def messageReceived(methods=['GET', 'POST']):
-    print('message was received!!!')
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
+
+
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        if not current_user.is_authenticated:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped
 
 
 @socketio.on('my event')
+@authenticated_only
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
-    socketio.emit('my response', json, callback=messageReceived)
+    socketio.emit('my response', json)
