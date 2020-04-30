@@ -10,3 +10,8 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[InputRequired(), EqualTo('password', message='Passwords must match')])
     # recaptcha = RecaptchaField()
     submit = SubmitField('Sign Up')
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[InputRequired(), Length(min=2, max=30)])
+    password = PasswordField('Password', validators=[InputRequired(), Length(min=6)])
+    submit = SubmitField('Log in')
