@@ -6,6 +6,7 @@ from flask_login import LoginManager
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cfe3c1b7cb40b32ec7df7161a139f9ba'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sql.db'
+# app.config['SQLALCHEMY_ECHO'] = True
 
 login_manager = LoginManager()
 login_manager.init_app(app)
