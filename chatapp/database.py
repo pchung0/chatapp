@@ -45,3 +45,6 @@ class Message(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     room = db.relationship('Room', back_populates='messages')
     user = db.relationship('User', back_populates='messages')
+
+    def __repr__(self):
+        return f"Message('{self.room_id}', '{self.user_id}', '{self.message})"

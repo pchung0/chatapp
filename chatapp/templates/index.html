@@ -7,19 +7,31 @@
 
 <body>
     <h1>{{ current_user.username }}</h1>
+    <h2 id=roomname></h2>
     <div class="message_holder"></div>
 
-    <form action="" method="POST">
+    <form id=1 action="" method="POST">
         <!-- <input type="text" class="username" placeholder="User Name" /> -->
         <input type="text" class="message" placeholder="Messages" />
         <input type="submit" />
     </form>
 
+    <!-- <form id=2 action="" method="POST">
+        <input type="text" class="username" placeholder="User Name" />
+        <input type="text" class="room" placeholder="Room" />
+        <input type="submit" />
+    </form> -->
+    <input type="text" id="room" placeholder="Room" />
+    <button id="create">Create Room</button>
+    <button id="join">Join Room</button>
+
+    <br>
+
     <a href="{{ url_for('register') }}">register</a>
     <a href="{{ url_for('login') }}">login</a>
     <a href="{{ url_for('logout') }}">logout</a>
 
-    <button id="join">Join Room</button>
+    <button id="leave">Leave Room</button>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -35,25 +47,48 @@
                     data: 'User Connected'
                 })
 
-                var form = $('form').on('submit', function (e) {
+                var form = $('form#1').on('submit', function (e) {
                     e.preventDefault()
                     // let user_name = $('input.username').val()
                     let user_input = $('input.message').val()
-                    socket.emit('my event', {
+                    socket.emit('send', {
                         user_name: '{{ current_user.username }}',
                         message: user_input
                     })
                     $('input.message').val('').focus()
                 })
+
+                // var form = $('form#2').on('submit', function (e) {
+                //     e.preventDefault()
+                //     // let user_name = $('input.username').val()
+                //     let user_input = $('input.room').val()
+                //     socket.emit('create', user_input)
+                //     $('h2#roomname').text(user_input)
+                //     $('input.room').val('').focus()
+                // })
+
+                $('#join').click(function() {
+                    let room = $('#room').val()
+                    socket.emit('join', room)
+                    $('h2#roomname').text(room)
+                    $('#room').val('')
+                })
+
+                $('#create').click(function() {
+                    let room = $('#room').val()
+                    socket.emit('create', room)
+                    $('h2#roomname').text(room)
+                    $('#room').val('')
+                })
             })
 
-            $("#join").click(function() {
-                console.log("join")
-                socket.emit('create', 'room1')
+            $("#leave").click(function() {
+                socket.emit('leave')
+                $('h2#roomname').text('')
             })
 
             socket.on('message', function(msg) {
-                $('div.message_holder').append('<div><b style="color: #000">' + msg + '</b> ' + 'has entered the room' + '</div>')
+                $('div.message_holder').append('<div><b style="color: #000">' + msg + '</b></div>')
             })
 
             socket.on('my response', function (msg) {
