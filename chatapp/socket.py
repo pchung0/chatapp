@@ -3,6 +3,7 @@ from flask import request
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, disconnect
 from chatapp import socketio, db
+from chatapp.database import Room
 
 rooms = {}
 
@@ -21,6 +22,14 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
     socketio.emit('my response', json)
 
+@socketio.on('connect')
+@authenticated_only
+def handle_connect():
+    for room in current_user.rooms:
+        join_room(room.id)
+        print(f'room info: {room.id} {room.name}')
+    socketio.emit('room info', rooms)
+
 @socketio.on('send')
 @authenticated_only
 def handle_send(json):
@@ -29,23 +38,23 @@ def handle_send(json):
 
 @socketio.on('create')
 @authenticated_only
-def handle_create(room):
-    uid = current_user.get_id()
-    join_room(room)
-    rooms[uid] = room
-    print(str(uid) + ' has entered the room "' + str(room) + '".')
-    print(request.sid)
-    socketio.send(str(uid) + ' has entered the room.', room=room)
+def handle_create(room_name):
+    room = Room(name=room_name, owner_id=current_user.id)
+    room.users.append(current_user)
+    db.session.add(room)
+    db.session.commit()
+
+    join_room(room.id)
+    socketio.send(f'{current_user.username} has entered the room.', room=room)
 
 @socketio.on('join')
 @authenticated_only
-def handle_join(room):
-    uid = current_user.get_id()
-    join_room(room)
-    rooms[uid] = room
-    print(str(uid) + ' has entered the room "' + str(room) + '".')
-    print(request.sid)
-    socketio.send(str(uid) + ' has entered the room.', room=room)
+def handle_join(room_name):
+    room = Room.query.filter_by(name=room_name).first()
+    if room:
+        room.users.append(current_user)
+        db.session.commit()
+        join_room(room.name)
 
 @socketio.on('leave')
 @authenticated_only

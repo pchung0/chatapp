@@ -8,7 +8,8 @@ from chatapp.database import User
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
+    return render_template('index.html', rooms=rooms)
 
 
 @app.route('/register', methods=['GET', 'POST'])
