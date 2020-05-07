@@ -20,6 +20,8 @@ class User(db.Model, UserMixin):
     rooms = db.relationship('Room', secondary=roomref, back_populates='users')
     messages = db.relationship('Message', back_populates='user')
 
+    session_id = -1
+
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:

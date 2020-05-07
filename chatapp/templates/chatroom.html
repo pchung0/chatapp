@@ -7,7 +7,7 @@
 
 <body>
     <h1>{{ current_user.username }}</h1>
-    <h2 id=roomname></h2>
+    <h1>{{ room_id }}</h1>
     <div class="message_holder"></div>
 
     <form id=1 action="" method="POST">
@@ -57,13 +57,12 @@
             })
 
             var form = $('form#1').on('submit', function (e) {
-
                 e.preventDefault()
                 // let user_name = $('input.username').val()
                 let user_input = $('input.message').val()
                 socket.emit('send', {
                     user_name: '{{ current_user.username }}',
-                    room_id: current_room_id,
+                    room_id: '{{ room_id }}',
                     message: user_input
                 })
                 $('input.message').val('').focus()
