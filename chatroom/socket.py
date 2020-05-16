@@ -2,10 +2,9 @@ import functools
 from flask import request, session
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, disconnect
-from chatapp import socketio, db
-from chatapp.database import Room
+from chatroom import socketio, db
+from chatroom.database import Room, Message
 
-l = [1,2,3]
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
@@ -24,7 +23,7 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
 @socketio.on('connect')
 @authenticated_only
 def handle_connect():
-    current_user.session_id = request.sid
+    # current_user.session_id = request.sid
     # session['sid'] = request.sid
     print('------------------')
     print(current_user.session_id)
@@ -36,9 +35,12 @@ def handle_connect():
 @socketio.on('send')
 @authenticated_only
 def handle_send(json):
-    print(type(request))
+    # print(type(request))
     print('received msg: ' + str(json))
     socketio.emit('message', json, room=int(json['room_id']))
+    message = Message(message=json['message'], room_id=json['room_id'], user_id=json['user_id'])
+    db.session.add(message)
+    db.session.commit()
 
 @socketio.on('create')
 @authenticated_only

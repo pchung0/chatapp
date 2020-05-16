@@ -7,7 +7,7 @@
 
 <body>
     <h1>{{ current_user.username }}</h1>
-    <h1>{{ room_id }}</h1>
+    <h2 id=roomname></h2>
     <div class="message_holder"></div>
 
     <form id=1 action="" method="POST">
@@ -57,12 +57,13 @@
             })
 
             var form = $('form#1').on('submit', function (e) {
+
                 e.preventDefault()
                 // let user_name = $('input.username').val()
                 let user_input = $('input.message').val()
                 socket.emit('send', {
                     user_name: '{{ current_user.username }}',
-                    room_id: '{{ room_id }}',
+                    room_id: current_room_id,
                     message: user_input
                 })
                 $('input.message').val('').focus()
@@ -97,11 +98,9 @@
                 console.log(rooms)
             })
 
-            socket.on('message', function(data) {
+            socket.on('message', function(msg) {
                 console.log("{{ url_for('home') }}" + '/room')
-                console.log('{{ room_id }}', data.room_id)
-                if ('{{ room_id }}' == data.room_id)
-                    $('div.message_holder').append('<div><b style="color: #000">' + data.message + '</b></div>')
+                $('div.message_holder').append('<div><b style="color: #000">' + msg + '</b></div>')
             })
 
             socket.on('my response', function (msg) {

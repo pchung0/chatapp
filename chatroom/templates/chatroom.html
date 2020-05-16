@@ -8,6 +8,9 @@
 <body>
     <h1>{{ current_user.username }}</h1>
     <h1>{{ room_id }}</h1>
+    {% for message in messages%}
+    <div><b style="color: #000">{{ message.message }}</b></div>
+    {% endfor %}
     <div class="message_holder"></div>
 
     <form id=1 action="" method="POST">
@@ -50,18 +53,20 @@
 
 
             socket.on('connect', function () {
-                console.log('connected')
+                console.log('connected:' + 'http://' + document.domain + ':' + location.port)
                 socket.emit('my event', {
                     data: 'User Connected'
                 })
             })
 
             var form = $('form#1').on('submit', function (e) {
+                console.log('message sent!!')
                 e.preventDefault()
                 // let user_name = $('input.username').val()
                 let user_input = $('input.message').val()
                 socket.emit('send', {
                     user_name: '{{ current_user.username }}',
+                    user_id: '{{ current_user.id }}',
                     room_id: '{{ room_id }}',
                     message: user_input
                 })
