@@ -1,4 +1,5 @@
 import functools
+import datetime
 from flask import request, session
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, disconnect
@@ -18,13 +19,10 @@ def authenticated_only(f):
 @authenticated_only
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
-    socketio.emit('my response', json)
 
 @socketio.on('connect')
 @authenticated_only
 def handle_connect():
-    # current_user.session_id = request.sid
-    # session['sid'] = request.sid
     print('------------------')
     print(current_user.session_id)
     for room in current_user.rooms:
@@ -34,11 +32,12 @@ def handle_connect():
 
 @socketio.on('send')
 @authenticated_only
-def handle_send(json):
+def handle_send(msg):
     # print(type(request))
-    print('received msg: ' + str(json))
-    socketio.emit('message', json, room=int(json['room_id']))
-    message = Message(message=json['message'], room_id=json['room_id'], user_id=json['user_id'])
+    print('received msg: ' + str(msg))
+    msg['datetime'] = datetime.datetime.now().strftime('%I:%M %p | %b %d')
+    socketio.emit('message', msg, room=int(msg['room_id']))
+    message = Message(message=msg['message'], room_id=msg['room_id'], user_id=msg['user_id'])
     db.session.add(message)
     db.session.commit()
 

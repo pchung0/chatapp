@@ -19,11 +19,9 @@
                     {{ form.username.label(class="form-control-label") }}
                     {% if form.username.errors %}
                     {{ form.username(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.username.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
+                    {% for error in form.username.errors %}
+                    <span class="invalid-feedback">{{ error }}</span>
+                    {% endfor %}
                     {% else %}
                     {{ form.username(class="form-control form-control-lg") }}
                     {% endif %}
@@ -32,11 +30,9 @@
                     {{ form.password.label(class="form-control-label") }}
                     {% if form.password.errors %}
                     {{ form.password(class="form-control form-control-lg is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.password.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
+                    {% for error in form.password.errors %}
+                    <span class="invalid-feedback">{{ error }}</span>
+                    {% endfor %}
                     {% else %}
                     {{ form.password(class="form-control form-control-lg") }}
                     {% endif %}

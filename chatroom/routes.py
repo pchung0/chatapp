@@ -8,18 +8,16 @@ from chatroom import app, login_manager, db, socketio
 from chatroom.database import User, Room
 from chatroom.socket import *
 
-# import functools
-# from flask_socketio import join_room, leave_room, disconnect
-# from chatapp import socketio
-
 @app.route('/')
 @login_required
 def home():
-    rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
-    return render_template('index2.html', rooms=rooms)
+    # rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
+    # return render_template('index2.html', rooms=rooms)
     # return render_template('session.html')
+    rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
+    return render_template('chatroom2.html', rooms=rooms, messages=[])
 
-@app.route('/room/<path:new_room>')
+@app.route('/room/<path:new_room>', methods=['GET', 'POST'])
 @login_required
 def enter_room(new_room):
     if 'room' in session:
@@ -29,11 +27,9 @@ def enter_room(new_room):
     if room and current_user in room.users:
         join_room(new_room, current_user.session_id, '/')
         rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
-        messages = [{'id':msg.id, 'message':msg.message} for msg in room.messages]
-        print('////////////////////////')
-        print(room.messages)
-        print(room)
-        return render_template('chatroom2.html', room_id=new_room, rooms=rooms, messages=messages)
+        messages = [{'id':msg.id, 'message':msg.message, 'user_id':msg.user_id, 'datetime':msg.datetime} for msg in room.messages]
+        return render_template('chatroom2.html', room_id=int(new_room), rooms=rooms, messages=messages)
+        # return render_template('chatroom2.html', room_id=int(new_room), rooms=rooms, messages=messages)
     return redirect(url_for('home'))
 
 @app.route('/register', methods=['GET', 'POST'])

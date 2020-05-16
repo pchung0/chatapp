@@ -1,5 +1,6 @@
 from chatroom import login_manager, db
 from flask_login import UserMixin
+import datetime
 
 
 @login_manager.user_loader
@@ -43,10 +44,11 @@ class Room(db.Model):
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(), nullable=False)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    datetime = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     room = db.relationship('Room', back_populates='messages')
     user = db.relationship('User', back_populates='messages')
 
     def __repr__(self):
-        return f"Message('{self.room_id}', '{self.user_id}', '{self.message})"
+        return f"Message({self.room_id}, {self.user_id}, '{self.message}', {self.datetime})"
