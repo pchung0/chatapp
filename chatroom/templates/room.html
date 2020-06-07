@@ -34,11 +34,14 @@
                             Invite
                         </button>
                         {% endif %}
+                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#confirm-delete">
+                            Delete
+                        </button>
                     </div>
 
                     <!-- Invite Modal -->
                     {% if current_room %}
-                    <div class="modal fade" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+                    <div class="modal fade" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
                             <div class="modal-content">
@@ -54,12 +57,13 @@
                                 <div class="modal-body">
                                     <div class="dropdown input-holder d-flex flex-wrap">
                                         <input class="dropdown-toggle flex-grow-1 modal-input" id="find-user-input" type="text" data-toggle="dropdown">
-                                        <div class="dropdown-menu scrollable-menu">
-                                            {% for user in users %}
+                                        <div id="username-drop-down" class="dropdown-menu scrollable-menu">
+                                            <!-- {% for user in users %}
                                             {% if not user.is_room_member %}
                                             <a class="dropdown-item" href="#">{{ user.username }}</a>
                                             {% endif %}
-                                            {% endfor %}
+                                            {% endfor %} -->
+
                                         </div>
                                       </div>
                                 </div>
@@ -72,13 +76,13 @@
                     {% endif %}
 
                     <!-- Create Modal -->
-                    <div class="modal fade" id="create-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+                    <div class="modal fade" id="create-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
                             <div class="modal-content">
                                 <div class="modal-header d-block">
                                     <div class="d-flex">
-                                        <h5 class="modal-title" >Create room</h5>
+                                        <h5 class="modal-title">Create room</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -94,12 +98,33 @@
                         </div>
                     </div>
 
+                    <!-- Delete Confirmation Modal -->
+                    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Delete Room?</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <span>Are you sure you want to delete <span class="current-room font-weight-bold">{{ current_room.name }}</span></span>
+                                </div>
+                                <div class="modal-footer">
+                                    <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
+                                    <a class="btn btn-danger btn-ok text-white">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                 </div>
             </div>
 
             <div class="messages-box">
-                <div class="list-group rounded-0">
+                <div id="room-list" class="list-group rounded-0">
                     <!-- <a class="list-group-item list-group-item-action active text-white rounded-0">
                         <div class="media"><img
                                 src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg"
@@ -114,7 +139,7 @@
                             </div>
                         </div>
                     </a> -->
-                    {% for room in rooms %}
+                    <!-- {% for room in rooms %}
                     {% if current_room and room.id == current_room.id %}
                     <a class="list-group-item list-group-item-action active text-white rounded-0">
                     {% else %}
@@ -123,15 +148,15 @@
                         <div class="media">
                             <div class="media-body ml-2">
                                 <div class="d-flex align-items-center justify-content-between mb-1">
-                                    <h6 class="mb-0">{{ room.name }}</h6>
+                                    <h6 class="mb-0">{{ room.name }}</h6> -->
                                     <!-- <small class="small font-weight-bold">14 Dec</small> -->
                                     <!-- <span class="badge badge-pill badge-info">4</span> -->
                                     <!-- <small id="room{{ room.id }}-notification" class="invisible"><span class="badge badge-secondary">0</span></small> -->
-                                </div>
+                                <!-- </div>
                             </div>
                         </div>
                     </a>
-                    {% endfor %}
+                    {% endfor %} -->
 
                 </div>
             </div>
@@ -140,9 +165,9 @@
         <!-- Chat Box-->
         <div class="col-7 px-0">
             <div id="chat-box" class="px-4 py-5 chat-box bg-white">
-                {% for message in messages %}
+                <!-- {% for message in messages %}
                 {% if current_user.id == message.user_id %}
-                <!-- Reciever Message-->
+                Reciever Message
                 <div class="media w-50 ml-auto mb-3">
                     <div class="media-body">
                         <div class="bg-primary rounded py-2 px-3 mb-2">
@@ -152,7 +177,7 @@
                     </div>
                 </div>
                 {% else %}
-                <!-- Sender Message-->
+                Sender Message
                 <div class="media w-50 mb-3"><img
                         src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user"
                         width="50" class="rounded-circle">
@@ -164,7 +189,7 @@
                     </div>
                 </div>
                 {% endif %}
-                {% endfor %}
+                {% endfor %} -->
             </div>
 
             <!-- Typing area -->
@@ -198,10 +223,12 @@ chat_box.scrollTop = chat_box.scrollHeight;
 $(document).ready(function () {
     var socket = io.connect('http://' + document.domain + ':' + location.port);
     var current_room_id = '{{ current_room.id }}';
+    var current_room_name = '{{ current_room.name }}';
     let current_user_id = '{{ current_user.id }}';
 
     $("#find-user-input").on("keyup", function() {
         var value = $(this).val().toLowerCase();
+
         $(".dropdown-menu a").filter(function() {
             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
         });
@@ -222,7 +249,91 @@ $(document).ready(function () {
 
     $('.modal').on('shown.bs.modal', function() {
         $(this).find('input').focus();
+
+        if ($(this).attr('id') == 'invite-modal'){
+            $('#username-drop-down').empty();
+            get_not_in_room_users(current_room_id).then(users => {
+            console.log(users);
+            jQuery.each(users, function() {
+                $('#username-drop-down').append('<a class="dropdown-item" href="#">' + this.username + '</a>')
+            });
+        });
+        }
     })
+
+    const get_room_list = async () => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room_list');
+        const room_list = await response.json();
+        return room_list;
+    }
+
+    const get_messages = async (room_id) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/messages');
+        const messages = await response.json();
+        return messages;
+    }
+
+    const get_users = async () => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/users');
+        const users = await response.json();
+        return users;
+    }
+
+    const get_not_in_room_users = async (room_id) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'not_members');
+        const users = await response.json();
+        return users;
+    }
+
+    function initialize_room_list() {
+        get_room_list().then(rooms => {
+            jQuery.each(rooms, function() {
+                append_room_list(this.id, this.name, current_room_id == this.id);
+            });
+        });
+    }
+
+    initialize_room_list();
+
+    $('div#room-list').on('click', 'a.room', function(e) {
+        e.preventDefault();
+        current_room_id = parseInt($(this).attr('href'));
+        current_room_name = $(this).attr('data-room-name');
+
+        $('#room-list a.active').addClass('list-group-item-light').removeClass('active');
+        $(this).addClass('active').removeClass('list-group-item-light');
+        $('div.chat-box').empty();
+
+        $('.current-room').text(current_room_name);
+
+        get_messages(current_room_id).then(messages => {
+            jQuery.each(messages, function() {
+                if (this.user_id == current_user_id)
+                append_receiver_chat_box(this.message, this.datetime);
+                else
+                append_sender_chat_box(this.message, this.datetime);
+            });
+        });
+
+        history.pushState('data to be passed', '', '/room/'+ current_room_id);
+    });
+
+    // get_room_list();
+
+    // const userAction = async () => {
+    //     const response = await fetch('http://' + document.domain + ':' + location.port + '/create_room', {
+    //         method: 'POST',
+    //         body: JSON.stringify({room_name : 'room113'}), // string or object
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         }
+    //     });
+    //     const myJson = await response.text(); //extract JSON from the http response
+    //     console.log(myJson);
+    //     // do something with myJson
+    // }
+
+    // userAction();
 
     socket.on('connect', function () {
         console.log('connected:')
@@ -266,6 +377,18 @@ $(document).ready(function () {
             window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room_id);
         })
     })
+
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').click(function(){
+            console.log(current_room_id);
+            socket.emit('delete', {
+                room_id: current_room_id,
+            })
+            $('#confirm-delete').modal('hide');
+            $('#room-list a.active').remove()
+        });
+
+    });
 
     $('#join').click(function () {
         let room = $('#room').val()
@@ -326,6 +449,39 @@ $(document).ready(function () {
             </div>
             `
         );
+    }
+
+    function append_room_list(id, name, activate){
+        if (activate){
+            $('div#room-list').append(
+                `
+                <a href="` + id + `" class="room active list-group-item list-group-item-action rounded-0">
+                    <div class="media">
+                        <div class="media-body ml-2">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <h6 class="mb-0">` + name + `</h6>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                `
+            );
+        }
+        else{
+            $('div#room-list').append(
+                `
+                <a href="` + id + `" class="room list-group-item list-group-item-action list-group-item-light rounded-0" data-room-id="` + id + `" data-room-name="` + name + `">
+                    <div class="media">
+                        <div class="media-body ml-2">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <h6 class="mb-0">` + name + `</h6>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                `
+            );
+        }
     }
 
     function scroll_bottom(id){

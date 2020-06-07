@@ -2,7 +2,7 @@ import functools
 import datetime
 from flask import request, session
 from flask_login import current_user
-from flask_socketio import join_room, leave_room, disconnect
+from flask_socketio import join_room, leave_room, close_room, disconnect
 from chatroom import socketio, db
 from chatroom.models import Room, Message, User
 
@@ -26,8 +26,6 @@ def handle_my_custom_event(json, methods=['GET', 'POST']):
 @socketio.on('connect')
 @authenticated_only
 def handle_connect():
-    print('------------------')
-    print(current_user.session_id)
     for room in current_user.rooms:
         join_room(room.id)
         print(f'room info: {room.id} {room.name}')
@@ -70,6 +68,17 @@ def handle_join(room_name):
         db.session.commit()
         join_room(room.name)
 
+
+@socketio.on('delete')
+@authenticated_only
+def handle_invite(data):
+    room_id = data['room_id']
+    room = Room.query.filter_by(id=room_id).first()
+    if room and current_user.id == room.owner_id:
+        print('askldjfkljasdklfjaklsdfj')
+        close_room(room_id)
+        db.session.delete(room)
+        db.session.commit()
 
 @socketio.on('invite')
 @authenticated_only
