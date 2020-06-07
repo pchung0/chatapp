@@ -4,7 +4,8 @@ from flask import request, session
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, disconnect
 from chatroom import socketio, db
-from chatroom.database import Room, Message
+from chatroom.models import Room, Message, User
+
 
 def authenticated_only(f):
     @functools.wraps(f)
@@ -15,10 +16,12 @@ def authenticated_only(f):
             return f(*args, **kwargs)
     return wrapped
 
+
 @socketio.on('my event')
 @authenticated_only
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
+
 
 @socketio.on('connect')
 @authenticated_only
@@ -30,6 +33,7 @@ def handle_connect():
         print(f'room info: {room.id} {room.name}')
     # socketio.emit('room info', room)
 
+
 @socketio.on('send')
 @authenticated_only
 def handle_send(msg):
@@ -37,9 +41,11 @@ def handle_send(msg):
     print('received msg: ' + str(msg))
     msg['datetime'] = datetime.datetime.now().strftime('%I:%M %p | %b %d')
     socketio.emit('message', msg, room=int(msg['room_id']))
-    message = Message(message=msg['message'], room_id=msg['room_id'], user_id=msg['user_id'])
+    message = Message(message=msg['message'],
+                      room_id=msg['room_id'], user_id=msg['user_id'])
     db.session.add(message)
     db.session.commit()
+
 
 @socketio.on('create')
 @authenticated_only
@@ -50,7 +56,10 @@ def handle_create(room_name):
     db.session.commit()
 
     join_room(room.id)
-    socketio.send(f'{current_user.username} has entered the room.', room=room.id)
+    socketio.emit('redirect room', room.id)
+    socketio.send(
+        f'{current_user.username} has entered the room.', room=room.id)
+
 
 @socketio.on('join')
 @authenticated_only
@@ -60,6 +69,29 @@ def handle_join(room_name):
         room.users.append(current_user)
         db.session.commit()
         join_room(room.name)
+
+
+@socketio.on('invite')
+@authenticated_only
+def handle_invite(data):
+    # room = User.query.join(User.rooms, aliased=True).filter_by(Room.id==data['room_id']).first()
+    # User.query.join(User.rooms, aliased=True).filter(Room.id==data['room_id']).first():
+    # room = Room.query.join(Room.users, aliased=True).filter(User.id==current_user.id).filter(Room.id==data['room_id']).first()
+    room = Room.query.filter_by(id=data['room_id']).first()
+    if not current_user in room.users: return
+    for username in data['users']:
+        user = User.query.filter_by(username=username).first()
+        if user:
+            room.users.append(user)
+    db.session.commit()
+
+
+    # room = Room.query.filter_by(name=room_name).first()
+    # if room:
+    #     room.users.append(current_user)
+    #     db.session.commit()
+    #     join_room(room.name)
+
 
 @socketio.on('leave')
 @authenticated_only

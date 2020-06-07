@@ -5,7 +5,8 @@ from werkzeug.urls import url_parse
 from flask_socketio import join_room, leave_room
 from user import app, login_manager, db
 from user.form import RegistrationForm, LoginForm
-from user.database import User, Room
+from user.models import User, Room
+
 
 @app.route('/')
 @login_required
@@ -14,23 +15,6 @@ def home():
     # print(f'cu: {current_user.session_id}')
     # return render_template('index.html', rooms=[{'id':1, 'name':'room1'}])
     return redirect('http://127.0.0.1:5001/')
-
-# @app.route('/room/<path:new_room>')
-# @login_required
-# def enter_room(new_room):
-#     print('++++++++++++++++')
-#     # print(session['_id'])
-#     # print(session['io'] )
-#     print(current_user.session_id)
-#     if 'room' in session:
-#         leave_room(session['room'], current_user.session_id, '/')
-#     session['room'] = new_room
-#     room = Room.query.filter_by(id=new_room).first()
-#     if room and current_user in room.users:
-#         join_room(new_room, current_user.session_id, '/')
-#         rooms = [{'id':room.id, 'name':room.name} for room in current_user.rooms]
-#         return render_template('chatroom.html', room_id=new_room, rooms=rooms)
-#     return redirect(url_for('home'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -62,7 +46,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and check_password_hash(user.password, form.password.data):
             login_user(user)
-            flash('Login Suceed')
+            # flash('Login Suceed')
             next_page = request.args.get('next')
             if not next_page or url_parse(next_page).netloc != '':
                 next_page = url_for('home')
@@ -76,4 +60,4 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))

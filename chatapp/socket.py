@@ -5,7 +5,9 @@ from flask_socketio import join_room, leave_room, disconnect
 from chatapp import socketio, db
 from chatapp.database import Room
 
-l = [1,2,3]
+l = [1, 2, 3]
+
+
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
@@ -15,11 +17,13 @@ def authenticated_only(f):
             return f(*args, **kwargs)
     return wrapped
 
+
 @socketio.on('my event')
 @authenticated_only
 def handle_my_custom_event(json, methods=['GET', 'POST']):
     print('received msg: ' + str(json))
     socketio.emit('my response', json)
+
 
 @socketio.on('connect')
 @authenticated_only
@@ -33,12 +37,14 @@ def handle_connect():
         print(f'room info: {room.id} {room.name}')
     # socketio.emit('room info', room)
 
+
 @socketio.on('send')
 @authenticated_only
 def handle_send(json):
     print(type(request))
     print('received msg: ' + str(json))
     socketio.emit('message', json, room=int(json['room_id']))
+
 
 @socketio.on('create')
 @authenticated_only
@@ -49,7 +55,9 @@ def handle_create(room_name):
     db.session.commit()
 
     join_room(room.id)
-    socketio.send(f'{current_user.username} has entered the room.', room=room.id)
+    socketio.send(
+        f'{current_user.username} has entered the room.', room=room.id)
+
 
 @socketio.on('join')
 @authenticated_only
@@ -59,6 +67,7 @@ def handle_join(room_name):
         room.users.append(current_user)
         db.session.commit()
         join_room(room.name)
+
 
 @socketio.on('leave')
 @authenticated_only

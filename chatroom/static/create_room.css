@@ -1,0 +1,32 @@
+.modal-input {
+    border    : 0;
+    padding   : 5px;
+    background: #f1f1f1;
+    display   : inline-block;
+}
+
+.modal-input:focus {
+    outline-width: 0;
+}
+
+.input-holder {
+    border       : 0;
+    border-radius: 0;
+    padding      : 5px;
+    margin-top   : -6px;
+    background   : #f1f1f1;
+}
+
+.flex-fill {
+    flex: 1;
+}
+
+.scrollable-menu {
+    height    : auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
+#find-user-input{
+    width     : 0px;
+}
