@@ -91,11 +91,11 @@ $(document).ready(function () {
 
     $('#invite-form').on('submit', function (e) {
         e.preventDefault();
-        console.log('invite form');
         var users = [];
         $(".input-holder span").each(function () { users.push($(this).text()) });
         $('#invite-modal').modal('hide');
         invite_room(current_room_id, users);
+        update_member_list(current_room_id);
     });
 
     $('#create-form').on('submit',function (e) {
@@ -182,6 +182,14 @@ $(document).ready(function () {
             $('i.fa-trash').addClass('d-none');
             $('i.fa-sign-out').removeClass('d-none');
         }
+    }
+
+    function update_member_list(room_id){
+        get_room_members(room_id).then(usernames => {
+            usernames[0] = usernames[0] + ' (owner)';
+            $('#chatroom-title').attr('title', 'Members:\r\n' + usernames.join('\r\n'));
+        });
+
     }
 
     const get_room_list = async () => {

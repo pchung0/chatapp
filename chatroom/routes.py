@@ -75,19 +75,20 @@ def room_message(room_id):
         messages = [{'message': msg.message, 'user_id': msg.user_id,
                      'datetime': msg.datetime.strftime('%I:%M %p | %b %d'),
                      'username' : msg.user.username} for msg in room.messages]
-        users = [user.username for user in room.users if user.id == room.owner_id]
-        users.extend([user.username for user in room.users if user.id != room.owner_id])
-        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages, 'users':users}
+        usernames = [user.username for user in room.users if user.id == room.owner_id]
+        usernames.extend([user.username for user in room.users if user.id != room.owner_id])
+        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages, 'users':usernames}
         return data
     return '0'
 
 @app.route('/room/<path:room_id>/users', methods=['Get'])
 @login_required
 def get_room_users(room_id):
-    if request.get_json():
-        room = Room.query.filter_by(id=room_id).first()
-        if current_user in room.users:
-            return [user.username for user in room.users]
+    room = Room.query.filter_by(id=room_id).first()
+    if current_user in room.users:
+        usernames = [user.username for user in room.users if user.id == room.owner_id]
+        usernames.extend([user.username for user in room.users if user.id != room.owner_id])
+        return jsonify(usernames)
     return '0'
 
 @app.route('/room/<path:room_id>/users', methods=['POST'])
