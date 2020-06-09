@@ -2,6 +2,13 @@
 
 CS300 Term Project
 
+
+This application consists of a chat server and many chat clients (users).
+A client can send messages to other clients through the server, and at the same time, can receive messages from other clients through the server.
+The server accepts connections from the clients and delivers messages from one client to the other over Internet in real time.
+
+## Preview
+
 ## Installation
 
 1. Clone the repository to your local machine:

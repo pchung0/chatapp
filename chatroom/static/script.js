@@ -51,6 +51,9 @@ $(document).ready(function () {
 
     $('.modal').on('hidden.bs.modal', function () {
         $('input').val('');
+        if ($(this).attr('id') == 'invite-modal') {
+            $('.dropdown').find('span').remove()
+        }
     });
 
     $('div#room-list').on('click', 'a.room', function (e) {
@@ -71,7 +74,7 @@ $(document).ready(function () {
     })
 
     $('#message-form').on('submit', function (e) {
-        e.preventDefault()
+        e.preventDefault();
         if (current_room_id) {
             let user_input = $('#message-input-box').val()
             if (user_input) {
@@ -86,14 +89,17 @@ $(document).ready(function () {
         $('#message-input-box').val('').focus()
     })
 
-    $("#invite").click(function () {
+    $('#invite-form').on('submit', function (e) {
+        e.preventDefault();
+        console.log('invite form');
         var users = [];
         $(".input-holder span").each(function () { users.push($(this).text()) });
         $('#invite-modal').modal('hide');
         invite_room(current_room_id, users);
-    })
+    });
 
-    $('#create').click(function () {
+    $('#create-form').on('submit',function (e) {
+        e.preventDefault();
         let room_name = $('#create-room-input').val();
         create_room(room_name);
         $('#create-modal').modal('hide');
@@ -272,7 +278,7 @@ $(document).ready(function () {
                     src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user"
                     width="50" class="rounded-circle">
                 <div class="media-body ml-3">
-                <div class="bg-light rounded py-2 px-3 mb-2">
+                    <div class="bg-light rounded py-2 px-3 mb-2">
                         <p class="text-small font-weight-bold">` + username + `</p>
                         <p class="text-small mb-0 text-muted">` + message + `</p>
                     </div>

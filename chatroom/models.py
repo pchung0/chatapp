@@ -36,7 +36,7 @@ class Room(db.Model):
     name = db.Column(db.String(30), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     users = db.relationship('User', secondary=roomref, back_populates='rooms')
-    messages = db.relationship('Message', back_populates='room')
+    messages = db.relationship('Message', back_populates='room', passive_deletes=True)
 
     def __repr__(self):
         return f"Room('{self.id}', '{self.name}', '{self.owner_id}', '{self.users})"
@@ -44,7 +44,7 @@ class Room(db.Model):
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String(), nullable=False)
-    room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id', ondelete='CASCADE'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     datetime = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     room = db.relationship('Room', back_populates='messages')

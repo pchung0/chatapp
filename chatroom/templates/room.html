@@ -55,15 +55,17 @@
                                     </div>
                                     <p class="current-room modal-title text-muted mt-1"></p>
                                 </div>
-                                <div class="modal-body">
-                                    <div class="dropdown input-holder d-flex flex-wrap">
-                                        <input id="invite-input" class="dropdown-toggle flex-grow-1 modal-input" type="text" data-toggle="dropdown">
-                                        <div id="username-dropdown" class="dropdown-menu scrollable-menu"></div>
+                                <form id="invite-form">
+                                    <div class="modal-body">
+                                        <div class="dropdown input-holder d-flex flex-wrap">
+                                            <input id="invite-input" class="dropdown-toggle flex-grow-1 modal-input" type="text" data-toggle="dropdown">
+                                            <div id="username-dropdown" class="dropdown-menu scrollable-menu"></div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" id="invite" data-dismiss="modal">Add</button>
-                                </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Add</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -81,12 +83,14 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="modal-body d-flex">
-                                    <input class="flex-grow-1 modal-input" id="create-room-input" type="text" data-toggle="dropdown">
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" id="create">Create</button>
-                                </div>
+                                <form id="create-form">
+                                    <div class="modal-body d-flex">
+                                        <input class="flex-grow-1 modal-input" id="create-room-input" type="text" data-toggle="dropdown">
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary">Create</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
