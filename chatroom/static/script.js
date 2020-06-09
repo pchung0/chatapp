@@ -66,7 +66,6 @@ $(document).ready(function () {
         $(this).addClass('active').removeClass('list-group-item-light');
         $('div.chat-box').empty();
         load_room(room_id);
-        console.log(current_room_id);
         history.pushState('data to be passed', '', '/room/' + room_id);
     });
 
@@ -147,11 +146,12 @@ $(document).ready(function () {
     })
 
     function init() {
+        let room_id = -1;
         if (window.location.pathname.match(/^\/room\/[0-9]+$/g)) {
-            let room_id = window.location.pathname.split("/").slice(-1)[0];
+            room_id = window.location.pathname.split("/").slice(-1)[0];
             load_room(room_id);
         }
-        load_room_list();
+        load_room_list(room_id);
     }
 
     function load_room(room_id){
@@ -258,10 +258,10 @@ $(document).ready(function () {
         });
     }
 
-    function load_room_list() {
+    function load_room_list(activate_room_id) {
         get_room_list().then(rooms => {
             jQuery.each(rooms, function () {
-                append_room_list(this.id, this.name, this.owner_id, current_room_id == this.id);
+                append_room_list(this.id, this.name, this.owner_id, activate_room_id == this.id);
             });
         });
     }

@@ -15,8 +15,8 @@ roomref = db.Table('roomref',
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30), unique=True, nullable=False)
-    first_name = db.Column(db.String(), nullable=False, default='Mike')
-    last_name = db.Column(db.String(), nullable=False, default='Stone')
+    first_name = db.Column(db.String(26), nullable=False, default='Mike')
+    last_name = db.Column(db.String(26), nullable=False, default='Stone')
     password = db.Column(db.String(120), nullable=False, default=123456)
     rooms = db.relationship('Room', secondary=roomref, back_populates='users')
     messages = db.relationship('Message', back_populates='user')
