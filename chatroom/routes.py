@@ -66,7 +66,7 @@ def delete_room(room_id):
     return '0'
 
 
-@app.route('/room/<path:room_id>/messages', methods=['GET'])
+@app.route('/room/<path:room_id>/data', methods=['GET'])
 @login_required
 def room_message(room_id):
     room = Room.query.filter_by(id=room_id).first()
@@ -74,8 +74,19 @@ def room_message(room_id):
         messages = [{'message': msg.message, 'user_id': msg.user_id,
                      'datetime': msg.datetime.strftime('%I:%M %p | %b %d'),
                      'username' : msg.user.username} for msg in room.messages]
-        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages}
+        users = [user.username for user in room.users if user.id == room.owner_id]
+        users.extend([user.username for user in room.users if user.id != room.owner_id])
+        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages, 'users':users}
         return data
+    return '0'
+
+@app.route('/room/<path:room_id>/users', methods=['Get'])
+@login_required
+def get_room_users(room_id):
+    if request.get_json():
+        room = Room.query.filter_by(id=room_id).first()
+        if current_user in room.users:
+            return [user.username for user in room.users]
     return '0'
 
 @app.route('/room/<path:room_id>/users', methods=['POST'])
@@ -83,13 +94,13 @@ def room_message(room_id):
 def invite_users(room_id):
     if request.get_json():
         room = Room.query.filter_by(id=room_id).first()
-        if not current_user in room.users: return '0'
-        for username in request.json['users']:
-            user = User.query.filter_by(username=username).first()
-            if user:
-                room.users.append(user)
-        db.session.commit()
-        return '1'
+        if current_user in room.users:
+            for username in request.json['users']:
+                user = User.query.filter_by(username=username).first()
+                if user:
+                    room.users.append(user)
+            db.session.commit()
+            return '1'
     return '0'
 
 

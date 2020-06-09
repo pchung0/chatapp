@@ -8,7 +8,6 @@ $(document).ready(function () {
     var room_list;
 
     $("#invite-input").on("keyup", function (e) {
-        console.log('drop down');
         var value = $(this).val().toLowerCase();
         // $('#username-dropdown a:contains()')
         // $('.input-holder span').text()
@@ -19,15 +18,11 @@ $(document).ready(function () {
 
         $('.dropdown-menu a').filter(function () {
             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-            console.log($(this));
         });
 
         $('.input-holder span').each(function(){
             var username = $(this).text();
-            console.log(username);
-            console.log($("#username-dropdown a:contains('" + username + "')"));
             $(".dropdown-menu a:contains('" + username + "')").toggle(false);
-            // $('#username-dropdown a:contains("test2")').toggle();
         });
     });
 
@@ -109,7 +104,6 @@ $(document).ready(function () {
 
     $('#confirm-delete').on('show.bs.modal', function (e) {
         $(this).find('.btn-ok').click(function () {
-            console.log('click delete');
             $('#confirm-delete').modal('toggle');
             $('#room-list a.active').remove()
             delete_room(current_room_id);
@@ -158,12 +152,14 @@ $(document).ready(function () {
         $('.room-modal').removeClass('d-none');
         $('#room-list .room[data-room-id= ' + room_id + '] i').addClass('d-none'); // remove notification dot
 
-        get_messages(room_id).then(room => {
-            console.log('restful return')
+        get_room(room_id).then(room => {
             current_room_id = room.id;
             current_room_name = room.name;
             current_room_owner_id = room.owner_id;
 
+            room.users[0] = room.users[0] + ' (owner)';
+            $('#chatroom-title').attr('title', 'Members:\r\n' + room.users.join('\r\n'));
+            $('#chatroom-title').text(current_room_name);
             $('.current-room').text(current_room_name);
             update_delete_leave_button(current_user_id == current_room_owner_id);
             render_messages(room.messages);
@@ -188,8 +184,8 @@ $(document).ready(function () {
         return room_list;
     }
 
-    const get_messages = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/messages');
+    const get_room = async (room_id) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/data');
         const messages = await response.json();
         return messages;
     }
@@ -206,6 +202,12 @@ $(document).ready(function () {
         return users;
     }
 
+    const get_room_members = async (room_id) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'users');
+        const users = await response.json();
+        return users;
+    }
+
     const create_room = async (new_room_name) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room', {
             method: 'POST',
@@ -215,7 +217,6 @@ $(document).ready(function () {
             }
         });
         const myJson = await response.text();
-        console.log(myJson);
     }
 
     const invite_room = async (room_id, usernames) => {
@@ -227,7 +228,6 @@ $(document).ready(function () {
             }
         });
         const myJson = await response.text();
-        console.log(myJson);
     }
 
     const delete_room = async (room_id) => {
@@ -235,11 +235,10 @@ $(document).ready(function () {
             method: 'DELETE'
         });
         const myJson = await response.text();
-        console.log(myJson);
     }
 
     // function render_messages() {
-    //     get_messages(current_room_id).then(room => {
+    //     get_room(current_room_id).then(room => {
     //         jQuery.each(room.messages, function () {
     //             if (this.user_id == current_user_id)
     //                 append_receiver_chat_box(this.message, this.datetime);
