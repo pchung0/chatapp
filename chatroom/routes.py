@@ -13,10 +13,27 @@ from chatroom.socket import *
 @login_required
 def home():
     rooms = [{'id': room.id, 'name': room.name} for room in current_user.rooms]
-    return render_template('room.html', current_room=None, rooms=rooms, messages=[])
+    return render_template('room.html', current_room=None)
 
 
-@app.route('/room/<path:room_id>', methods=['GET', 'POST'])
+@app.route('/room', methods=['POST'])
+@login_required
+def create_room():
+    if request.get_json():
+        room_name = request.json['room_name']
+        room = Room(name=room_name, owner_id=current_user.id)
+        room.users.append(current_user)
+        db.session.add(room)
+        db.session.commit()
+
+        join_room(room.id, current_user.session_id, '/')
+        socketio.emit('redirect room', room.id)
+        socketio.send(f'{current_user.username} has entered the room.', room=room.id)
+        return '1'
+    return '0'
+
+
+@app.route('/room/<path:room_id>', methods=['GET'])
 @login_required
 def enter_room(room_id):
     if 'room' in session:
@@ -30,29 +47,68 @@ def enter_room(room_id):
     return redirect(url_for('home'))
 
 
+@app.route('/room/<path:room_id>', methods=['DELETE'])
+@login_required
+def delete_room(room_id):
+    room = Room.query.filter_by(id=room_id).first()
+    print('--------------------')
+    print(room)
+    if room and current_user.id == room.owner_id:
+        close_room(room.id, current_user.session_id)
+        db.session.delete(room)
+        db.session.commit()
+        return '1'
+    elif current_user in room.users:
+        leave_room(room.id, current_user.session_id, '/')
+        room.users.remove(current_user)
+        db.session.commit()
+        return '1'
+    return '0'
+
+
 @app.route('/room/<path:room_id>/messages', methods=['GET'])
+@login_required
 def room_message(room_id):
     room = Room.query.filter_by(id=room_id).first()
     if room:
-        messages = [{'message': msg.message, 'user_id': msg.user_id, 'datetime': msg.datetime.strftime(
-            '%I:%M %p | %b %d')} for msg in room.messages]
-        return jsonify(messages)
+        messages = [{'message': msg.message, 'user_id': msg.user_id,
+                     'datetime': msg.datetime.strftime('%I:%M %p | %b %d'),
+                     'username' : msg.user.username} for msg in room.messages]
+        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages}
+        return data
+    return '0'
+
+@app.route('/room/<path:room_id>/users', methods=['POST'])
+@login_required
+def invite_users(room_id):
+    if request.get_json():
+        room = Room.query.filter_by(id=room_id).first()
+        if not current_user in room.users: return '0'
+        for username in request.json['users']:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                room.users.append(user)
+        db.session.commit()
+        return '1'
     return '0'
 
 
 @app.route('/room_list', methods=['GET'])
+@login_required
 def room_list():
-    rooms = [{'id': room.id, 'name': room.name} for room in current_user.rooms]
+    rooms = [{'id': room.id, 'name': room.name, 'owner_id': room.owner_id} for room in current_user.rooms]
     return jsonify(rooms)
 
 
 @app.route('/users', methods=['GET'])
+@login_required
 def get_users():
     users = User.query.with_entities(User.id, User.username).all()
     return jsonify(users)
 
 
 @app.route('/room/<path:room_id>/not_members', methods=['GET'])
+@login_required
 def get_not_member_users(room_id):
     room = Room.query.filter_by(id=room_id).first()
     room_users = {user.id for user in room.users}

@@ -2,81 +2,87 @@ $(document).ready(function () {
     var socket = io.connect('http://' + document.domain + ':' + location.port);
     var current_room_id;
     var current_room_name;
+    var current_room_owner_id;
     var current_user_id = $('#username').attr('data-user-id');
+    var current_username = $('#username').text();
+    var room_list;
 
-    function init() {
-        render_room_list();
-        if (window.location.pathname.match(/^\/room\/[0-9]+$/g)) {
-            current_room_id = window.location.pathname.split("/").slice(-1)[0];
-            $('.invite-modal').removeClass('d-none');
-            render_messages();
-        }
-    }
-
-    $("#invite-input").on("keyup", function () {
+    $("#invite-input").on("keyup", function (e) {
+        console.log('drop down');
         var value = $(this).val().toLowerCase();
-        $(".dropdown-menu a").filter(function () {
+        // $('#username-dropdown a:contains()')
+        // $('.input-holder span').text()
+
+        if (e.which == 8 && $(this).val() == '')
+            $(this).prev().remove();
+        // else if(e.which == 32 && $(this).val() == )
+
+        $('.dropdown-menu a').filter(function () {
             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            console.log($(this));
+        });
+
+        $('.input-holder span').each(function(){
+            var username = $(this).text();
+            console.log(username);
+            console.log($("#username-dropdown a:contains('" + username + "')"));
+            $(".dropdown-menu a:contains('" + username + "')").toggle(false);
+            // $('#username-dropdown a:contains("test2")').toggle();
         });
     });
 
-    $('.dropdown-menu').find('a').click(function (e) {
-        e.preventDefault();
-        var param = $(this).html();
-        $('#invite-input').before('<span class="badge badge-secondary align-self-center mr-1">' + param + '</span>');
-        $('input').val('');
-        $('#invite-input').load("#invite-input");
-    });
 
-    $("#invite-input").keydown(function (e) {
-        if (e.which == 8 && $(this).val() == '')
-            $(this).prev().remove();
+    $('.dropdown-menu').on('click', 'a', function (e) {
+        e.preventDefault();
+        var username = $(this).html();
+        $(this).toggle(false);
+        $('#invite-input').before('<span class="badge badge-secondary align-self-center mr-1">' + username + '</span>');
+        $('input').val('');
+        // $('#invite-input').load("#invite-input");
     });
 
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('input').focus();
 
         if ($(this).attr('id') == 'invite-modal') {
-            $('#username-drop-down').empty();
+            $('#username-dropdown').empty();
             get_not_in_room_users(current_room_id).then(users => {
-                console.log(users);
                 jQuery.each(users, function () {
-                    $('#username-drop-down').append('<a class="dropdown-item" href="#">' + this.username + '</a>')
+                    $('#username-dropdown').append('<a class="dropdown-item" href="#">' + this.username + '</a>');
                 });
             });
         }
     })
 
+    $('.modal').on('hidden.bs.modal', function () {
+        $('input').val('');
+    });
+
     $('div#room-list').on('click', 'a.room', function (e) {
         e.preventDefault();
-        current_room_id = parseInt($(this).attr('href'));
-        current_room_name = $(this).attr('data-room-name');
+        let room_id = parseInt($(this).attr('href'));
 
         $('#room-list a.active').addClass('list-group-item-light').removeClass('active');
         $(this).addClass('active').removeClass('list-group-item-light');
         $('div.chat-box').empty();
-
-        $('.current-room').text(current_room_name);
-        $('.invite-modal').removeClass('d-none');
-
-        render_messages();
-        history.pushState('data to be passed', '', '/room/' + current_room_id);
+        load_room(room_id);
+        console.log(current_room_id);
+        history.pushState('data to be passed', '', '/room/' + room_id);
     });
 
     socket.on('connect', function () {
-        console.log('connected:')
         socket.emit('my event', {
             data: 'User Connected'
         })
     })
 
-    var form = $('#message-form').on('submit', function (e) {
+    $('#message-form').on('submit', function (e) {
         e.preventDefault()
         if (current_room_id) {
             let user_input = $('#message-input-box').val()
             if (user_input) {
                 socket.emit('send', {
-                    user_name: '{{ current_user.username }}',
+                    username: current_username,
                     user_id: current_user_id,
                     room_id: current_room_id,
                     message: user_input
@@ -89,31 +95,25 @@ $(document).ready(function () {
     $("#invite").click(function () {
         var users = [];
         $(".input-holder span").each(function () { users.push($(this).text()) });
-        socket.emit('invite', {
-            room_id: current_room_id,
-            users: users
-        })
         $('#invite-modal').modal('hide');
+        invite_room(current_room_id, users);
     })
 
     $('#create').click(function () {
         let room_name = $('#create-room-input').val();
-        socket.emit('create', room_name);
+        create_room(room_name);
         $('#create-modal').modal('hide');
         socket.on('redirect room', function (room_id) {
-            // $('div.message_holder').append('<div><b style="color: #000">' + msg + '</b></div>')
             window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room_id);
         })
     })
 
     $('#confirm-delete').on('show.bs.modal', function (e) {
         $(this).find('.btn-ok').click(function () {
-            console.log(current_room_id);
-            socket.emit('delete', {
-                room_id: current_room_id,
-            })
-            $('#confirm-delete').modal('hide');
+            console.log('click delete');
+            $('#confirm-delete').modal('toggle');
             $('#room-list a.active').remove()
+            delete_room(current_room_id);
         });
 
     });
@@ -127,7 +127,6 @@ $(document).ready(function () {
 
     $("#leave").click(function () {
         socket.emit('leave')
-        // $('h2#roomname').text('')
     })
 
     socket.on('room info', function (rooms) {
@@ -136,16 +135,52 @@ $(document).ready(function () {
     })
 
     socket.on('message', function (msg) {
-        console.log("{{ url_for('home') }}" + '/room')
-        console.log(current_room_id, msg.room_id)
         if (current_room_id == msg.room_id) {
             if (current_user_id == msg.user_id)
                 append_receiver_chat_box(msg.message, msg.datetime);
             else
-                append_sender_chat_box(msg.message, msg.datetime);
+                append_sender_chat_box(msg.message, msg.datetime, msg.username);
             scroll_bottom('chat-box');
+        } else {
+            $('#room-list .room[data-room-id=' + msg.room_id + '] i').removeClass('d-none');
         }
     })
+
+    function init() {
+        if (window.location.pathname.match(/^\/room\/[0-9]+$/g)) {
+            let room_id = window.location.pathname.split("/").slice(-1)[0];
+            load_room(room_id);
+        }
+        load_room_list();
+    }
+
+    function load_room(room_id){
+        $('.room-modal').removeClass('d-none');
+        $('#room-list .room[data-room-id= ' + room_id + '] i').addClass('d-none'); // remove notification dot
+
+        get_messages(room_id).then(room => {
+            console.log('restful return')
+            current_room_id = room.id;
+            current_room_name = room.name;
+            current_room_owner_id = room.owner_id;
+
+            $('.current-room').text(current_room_name);
+            update_delete_leave_button(current_user_id == current_room_owner_id);
+            render_messages(room.messages);
+        });
+    }
+
+    function update_delete_leave_button(bool){
+        if (bool){
+            $('.delete-leave').text('Delete');
+            $('i.fa-trash').removeClass('d-none');
+            $('i.fa-sign-out').addClass('d-none');
+        } else {
+            $('.delete-leave').text('Leave');
+            $('i.fa-trash').addClass('d-none');
+            $('i.fa-sign-out').removeClass('d-none');
+        }
+    }
 
     const get_room_list = async () => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room_list');
@@ -171,33 +206,75 @@ $(document).ready(function () {
         return users;
     }
 
-    function render_messages() {
-        get_messages(current_room_id).then(messages => {
-            jQuery.each(messages, function () {
-                if (this.user_id == current_user_id)
-                    append_receiver_chat_box(this.message, this.datetime);
-                else
-                    append_sender_chat_box(this.message, this.datetime);
-            });
+    const create_room = async (new_room_name) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room', {
+            method: 'POST',
+            body: JSON.stringify({ room_name: new_room_name }), // string or object
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const myJson = await response.text();
+        console.log(myJson);
+    }
+
+    const invite_room = async (room_id, usernames) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/users', {
+            method: 'POST',
+            body: JSON.stringify({ users: usernames }), // string or object
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const myJson = await response.text();
+        console.log(myJson);
+    }
+
+    const delete_room = async (room_id) => {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id, {
+            method: 'DELETE'
+        });
+        const myJson = await response.text();
+        console.log(myJson);
+    }
+
+    // function render_messages() {
+    //     get_messages(current_room_id).then(room => {
+    //         jQuery.each(room.messages, function () {
+    //             if (this.user_id == current_user_id)
+    //                 append_receiver_chat_box(this.message, this.datetime);
+    //             else
+    //                 append_sender_chat_box(this.message, this.datetime, this.username);
+    //         });
+    //     });
+    // }
+
+    function render_messages(messages) {
+        jQuery.each(messages, function () {
+            if (this.user_id == current_user_id)
+                append_receiver_chat_box(this.message, this.datetime);
+            else
+                append_sender_chat_box(this.message, this.datetime, this.username);
         });
     }
 
-    function render_room_list() {
+    function load_room_list() {
         get_room_list().then(rooms => {
             jQuery.each(rooms, function () {
-                append_room_list(this.id, this.name, current_room_id == this.id);
+                append_room_list(this.id, this.name, this.owner_id, current_room_id == this.id);
             });
         });
     }
 
-    function append_sender_chat_box(message, datetime) {
+    function append_sender_chat_box(message, datetime, username) {
         $('div.chat-box').append(
             `
             <div class="media w-50 mb-3"><img
                     src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user"
                     width="50" class="rounded-circle">
                 <div class="media-body ml-3">
-                    <div class="bg-light rounded py-2 px-3 mb-2">
+                <div class="bg-light rounded py-2 px-3 mb-2">
+                        <p class="text-small">` + username + `</p>
                         <p class="text-small mb-0 text-muted">` + message + `</p>
                     </div>
                     <p class="small text-muted">` + datetime + `</p>
@@ -222,15 +299,17 @@ $(document).ready(function () {
         );
     }
 
-    function append_room_list(id, name, activate) {
+    function append_room_list(id, name, owner_id, activate) {
         if (activate) {
             $('div#room-list').append(
                 `
-                <a href="` + id + `" class="room active list-group-item list-group-item-action rounded-0">
+                <a href="` + id + `" class="room active list-group-item list-group-item-action rounded-0" data-room-id="`
+                + id + `" data-room-name="` + name + `" data-room-owner-id="` + owner_id + `">
                     <div class="media">
                         <div class="media-body ml-2">
                             <div class="d-flex align-items-center justify-content-between mb-1">
                                 <h6 class="mb-0">` + name + `</h6>
+                                <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
                             </div>
                         </div>
                     </div>
@@ -241,11 +320,13 @@ $(document).ready(function () {
         else {
             $('div#room-list').append(
                 `
-                <a href="` + id + `" class="room list-group-item list-group-item-action list-group-item-light rounded-0" data-room-id="` + id + `" data-room-name="` + name + `">
+                <a href="` + id + `" class="room list-group-item list-group-item-action list-group-item-light rounded-0" data-room-id="`
+                + id + `" data-room-name="` + name + `" data-room-owner-id="` + owner_id + `">
                     <div class="media">
                         <div class="media-body ml-2">
                             <div class="d-flex align-items-center justify-content-between mb-1">
                                 <h6 class="mb-0">` + name + `</h6>
+                                <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
                             </div>
                         </div>
                     </div>

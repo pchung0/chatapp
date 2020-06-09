@@ -27,18 +27,22 @@
                     <!-- Button trigger modal -->
                     <div class="col text-right">
                         <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#create-modal">
-                            Create
+                            <!-- Create -->
+                            <i class="fa fa-plus" data-toggle="tooltip" title="Create a new room"></i>
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm d-none invite-modal" data-toggle="modal" data-target="#invite-modal">
-                            Invite
+                        <button type="button" class="btn btn-primary btn-sm d-none room-modal" data-toggle="modal" data-target="#invite-modal">
+                            <!-- Invite -->
+                            <i class="fa fa-user-plus" data-toggle="tooltip" title="Invite people"></i>
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#confirm-delete">
-                            Delete
+                        <button type="button" class="btn btn-primary btn-sm d-none room-modal" data-toggle="modal" data-target="#confirm-delete">
+                            <!-- <span class="delete-leave">Delete</span> -->
+                            <i class="fa fa-trash d-none" data-toggle="tooltip" title="Delete the room"></i>
+                            <i class="fa fa-sign-out d-none" data-toggle="tooltip" title="Leave the room"></i>
                         </button>
                     </div>
 
                     <!-- Invite Modal -->
-                    <div class="modal fade d-none invite-modal" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                    <div class="modal fade d-none room-modal" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
                         aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="document">
                             <div class="modal-content">
@@ -49,13 +53,13 @@
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <small class="current-room modal-title">{{ current_room.name }}</small>
+                                    <p class="current-room modal-title text-muted mt-1"></p>
                                 </div>
                                 <div class="modal-body">
                                     <div class="dropdown input-holder d-flex flex-wrap">
                                         <input id="invite-input" class="dropdown-toggle flex-grow-1 modal-input" type="text" data-toggle="dropdown">
-                                        <div id="username-drop-down" class="dropdown-menu scrollable-menu"></div>
-                                      </div>
+                                        <div id="username-dropdown" class="dropdown-menu scrollable-menu"></div>
+                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-primary" id="invite" data-dismiss="modal">Add</button>
@@ -88,21 +92,21 @@
                     </div>
 
                     <!-- Delete Confirmation Modal -->
-                    <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal fade d-none room-modal" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title">Delete Room?</h5>
+                                    <h5 class="modal-title"><span class="delete-leave">Delete</span> Room?</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <span>Are you sure you want to delete <span class="current-room font-weight-bold">{{ current_room.name }}</span></span>
+                                    <span>Are you sure you want to <span class="delete-leave text-lowercase">delete</span> <span class="current-room font-weight-bold">{{ current_room.name }}</span></span>
                                 </div>
                                 <div class="modal-footer">
                                     <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
-                                    <a class="btn btn-danger btn-ok text-white">Delete</a>
+                                    <a class="btn btn-danger btn-ok text-white"><span class="delete-leave">Delete</span></a>
                                 </div>
                             </div>
                         </div>
@@ -147,8 +151,6 @@ var chat_box = document.getElementById('chat-box');
 chat_box.scrollTop = chat_box.scrollHeight;
 </script>
 {% endblock content %}
-{% block navbar %}
-{% endblock %}
 {% block footer %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 <script src="{{ url_for('static', filename='script.js') }}"></script>
