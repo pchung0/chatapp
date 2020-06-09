@@ -274,10 +274,10 @@ $(document).ready(function () {
                     width="50" class="rounded-circle">
                 <div class="media-body ml-3">
                 <div class="bg-light rounded py-2 px-3 mb-2">
-                        <p class="text-small">` + username + `</p>
+                        <p class="text-small font-weight-bold">` + username + `</p>
                         <p class="text-small mb-0 text-muted">` + message + `</p>
                     </div>
-                    <p class="small text-muted">` + datetime + `</p>
+                    <p class="small text-muted font-weight-light">` + datetime + `</p>
                 </div>
             </div>
             `
