@@ -109,17 +109,29 @@ $(document).ready(function () {
         });
     });
 
-    $('#confirm-delete').on('show.bs.modal', function () {
-        $(this).find('.btn-ok').click(function () {
-            $('#confirm-delete').modal('toggle');
-            $('#chatroom-title').text('');
-            $('.room-modal').removeClass('d-none');
-            $('#room-list a.active').remove();
-            $('div.chat-box').empty();
-            delete_room(current_room_id);
-            history.pushState('data to be passed', '', '');
-        });
+    $('#confirm-delete').find('.btn-ok').click(function () {
+        console.log('delet');
+        $('#confirm-delete').modal('hide');
+        $('#chatroom-title').text('');
+        $('.room-modal').addClass('d-none');
+        $('#room-list a.active').remove();
+        $('div.chat-box').empty();
+        delete_room(current_room_id);
+        history.pushState('data to be passed', '', '');
     });
+
+    // $('#confirm-delete').on('show.bs.modal', function () {
+    //     $(this).find('.btn-ok').click(function () {
+    //         console.log('delet');
+    //         $('#confirm-delete').modal('hide');
+    //         $('#chatroom-title').text('');
+    //         $('.room-modal').addClass('d-none');
+    //         $('#room-list a.active').remove();
+    //         $('div.chat-box').empty();
+    //         delete_room(current_room_id);
+    //         history.pushState('data to be passed', '', '');
+    //     });
+    // });
 
     $('#join').click(function () {
         let room = $('#room').val();
@@ -173,6 +185,7 @@ $(document).ready(function () {
             $('.current-room').text(current_room_name);
             update_delete_leave_button(current_user_id == current_room_owner_id);
             render_messages(room.messages);
+            scroll_bottom('chat-box');
         });
     }
 
