@@ -55,8 +55,8 @@ def delete_room(room_id):
     print(room)
     if room and current_user.id == room.owner_id:
         close_room(room.id, current_user.session_id)
-        # room.messages.delete()
         db.session.delete(room)
+        Message.query.filter_by(room_id=room_id).delete()
         db.session.commit()
         return '1'
     elif current_user in room.users:

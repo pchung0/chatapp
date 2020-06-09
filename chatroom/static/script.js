@@ -5,7 +5,6 @@ $(document).ready(function () {
     var current_room_owner_id;
     var current_user_id = $('#username').attr('data-user-id');
     var current_username = $('#username').text();
-    var room_list;
 
     $("#invite-input").on("keyup", function (e) {
         var value = $(this).val().toLowerCase();
@@ -17,7 +16,7 @@ $(document).ready(function () {
         // else if(e.which == 32 && $(this).val() == )
 
         $('.dropdown-menu a').filter(function () {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
         });
 
         $('.input-holder span').each(function(){
@@ -47,17 +46,18 @@ $(document).ready(function () {
                 });
             });
         }
-    })
+    });
 
     $('.modal').on('hidden.bs.modal', function () {
         $('input').val('');
         if ($(this).attr('id') == 'invite-modal') {
-            $('.dropdown').find('span').remove()
+            $('.dropdown').find('span').remove();
         }
     });
 
     $('div#room-list').on('click', 'a.room', function (e) {
         e.preventDefault();
+        console.log($(this));
         let room_id = parseInt($(this).attr('href'));
 
         $('#room-list a.active').addClass('list-group-item-light').removeClass('active');
@@ -70,68 +70,72 @@ $(document).ready(function () {
     socket.on('connect', function () {
         socket.emit('my event', {
             data: 'User Connected'
-        })
-    })
+        });
+    });
 
     $('#message-form').on('submit', function (e) {
         e.preventDefault();
         if (current_room_id) {
-            let user_input = $('#message-input-box').val()
+            let user_input = $('#message-input-box').val();
             if (user_input) {
                 socket.emit('send', {
                     username: current_username,
                     user_id: current_user_id,
                     room_id: current_room_id,
                     message: user_input
-                })
+                });
             }
         }
-        $('#message-input-box').val('').focus()
-    })
+        $('#message-input-box').val('').focus();
+    });
 
     $('#invite-form').on('submit', function (e) {
         e.preventDefault();
         var users = [];
-        $(".input-holder span").each(function () { users.push($(this).text()) });
+        $(".input-holder span").each(function () { users.push($(this).text()); });
         $('#invite-modal').modal('hide');
         invite_room(current_room_id, users);
         update_member_list(current_room_id);
     });
 
     $('#create-form').on('submit',function (e) {
+        console.log('create');
         e.preventDefault();
         let room_name = $('#create-room-input').val();
         create_room(room_name);
         $('#create-modal').modal('hide');
         socket.on('redirect room', function (room_id) {
             window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room_id);
-        })
-    })
+        });
+    });
 
-    $('#confirm-delete').on('show.bs.modal', function (e) {
+    $('#confirm-delete').on('show.bs.modal', function () {
         $(this).find('.btn-ok').click(function () {
             $('#confirm-delete').modal('toggle');
-            $('#room-list a.active').remove()
+            $('#chatroom-title').text('');
+            $('.room-modal').removeClass('d-none');
+            $('#room-list a.active').remove();
+            $('div.chat-box').empty();
             delete_room(current_room_id);
+            history.pushState('data to be passed', '', '');
         });
-
     });
 
     $('#join').click(function () {
-        let room = $('#room').val()
-        socket.emit('join', room)
-        $('h2#roomname').text(room)
-        $('#room').val('')
-    })
+        let room = $('#room').val();
+        socket.emit('join', room);
+        $('h2#roomname').text(room);
+        $('#room').val('');
+    });
 
     $("#leave").click(function () {
-        socket.emit('leave')
-    })
+        socket.emit('leave');
+    });
 
     socket.on('room info', function (rooms) {
         // $('div.message_holder').append('<div><b style="color: #000">' + msg + '</b></div>')
-        console.log(rooms)
-    })
+        console.log(rooms);
+    });
 
     socket.on('message', function (msg) {
         if (current_room_id == msg.room_id) {
@@ -143,7 +147,7 @@ $(document).ready(function () {
         } else {
             $('#room-list .room[data-room-id=' + msg.room_id + '] i').removeClass('d-none');
         }
-    })
+    });
 
     function init() {
         let room_id = -1;
@@ -196,31 +200,31 @@ $(document).ready(function () {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room_list');
         const room_list = await response.json();
         return room_list;
-    }
+    };
 
     const get_room = async (room_id) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/data');
         const messages = await response.json();
         return messages;
-    }
+    };
 
-    const get_users = async () => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/users');
-        const users = await response.json();
-        return users;
-    }
+    // const get_users = async () => {
+    //     const response = await fetch('http://' + document.domain + ':' + location.port + '/users');
+    //     const users = await response.json();
+    //     return users;
+    // }
 
     const get_not_in_room_users = async (room_id) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'not_members');
         const users = await response.json();
         return users;
-    }
+    };
 
     const get_room_members = async (room_id) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'users');
         const users = await response.json();
         return users;
-    }
+    };
 
     const create_room = async (new_room_name) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room', {
@@ -231,7 +235,7 @@ $(document).ready(function () {
             }
         });
         const myJson = await response.text();
-    }
+    };
 
     const invite_room = async (room_id, usernames) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/users', {
@@ -242,14 +246,14 @@ $(document).ready(function () {
             }
         });
         const myJson = await response.text();
-    }
+    };
 
     const delete_room = async (room_id) => {
         const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id, {
             method: 'DELETE'
         });
         const myJson = await response.text();
-    }
+    };
 
     // function render_messages() {
     //     get_room(current_room_id).then(room => {
@@ -355,4 +359,4 @@ $(document).ready(function () {
     }
 
     init();
-})
+});
