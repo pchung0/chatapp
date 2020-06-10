@@ -98,8 +98,9 @@ $(document).ready(function () {
         var users = [];
         $(".input-holder span").each(function () { users.push($(this).text()); });
         $('#invite-modal').modal('hide');
-        invite_room(current_room_id, users);
-        update_member_list(current_room_id);
+        invite_room(current_room_id, users).then(function(){
+            update_member_list(current_room_id);
+        });
     });
 
     $('#create-form').on('submit',function (e) {

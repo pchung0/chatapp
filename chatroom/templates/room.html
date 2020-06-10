@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='chatroom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='create_room.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/chatroom.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/create_room.css') }}">
 </head>
 <!-- <body> -->
 <div class="container py-5 px-4">
@@ -106,7 +106,7 @@
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <span>Are you sure you want to <span class="delete-leave text-lowercase">delete</span> <span class="current-room font-weight-bold">{{ current_room.name }}</span></span>
+                                    <span>Are you sure you want to <span class="delete-leave text-lowercase">delete</span> <span class="current-room font-weight-bold"></span></span>
                                 </div>
                                 <div class="modal-footer">
                                     <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
@@ -157,5 +157,5 @@ chat_box.scrollTop = chat_box.scrollHeight;
 {% endblock content %}
 {% block footer %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}
