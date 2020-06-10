@@ -9,6 +9,8 @@ The server accepts connections from the clients and delivers messages from one c
 
 ## Preview
 
+![Screenshot](https://i.imgur.com/idZ7d9x.png)
+
 ## Installation
 
 1. Clone the repository to your local machine:
@@ -17,22 +19,22 @@ The server accepts connections from the clients and delivers messages from one c
 2. Navigate to the clone folder:
 `cd chatapp`
 
-3. install virtualenv:
+3. Install virtualenv:
 `python3 -m pip install --user virtualenv`
 
 4. Create a virtual environment:
 `python3 -m venv venv`
 
-5. activate the virtual environment:
+5. Activate the virtual environment:
 `source venv/bin/activate`
 
-6. install the required python packages:
-`pip install -r requirement.txt`
+6. Install the required python packages:
+`pip install -r requirements.txt`
 
-7. start the user service:
+7. Start the user service:
 `python run_user.py`
 
-8. start the chatroom service:
+8. Start the chatroom service:
 `python run_chatroom.py`
 
-9. open the app by entering `localhost:5000` in a broswer address bar
+9. Open the app by entering `localhost:5000` in a broswer address bar
