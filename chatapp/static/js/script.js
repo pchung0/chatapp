@@ -255,9 +255,9 @@ $(document).ready(function () {
     };
 
     const invite_room = async (room_id, usernames) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/users', {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/invite', {
             method: 'POST',
-            body: JSON.stringify({ users: usernames }), // string or object
+            body: JSON.stringify({ 'room_id': room_id, 'users': usernames }), // string or object
             headers: {
                 'Content-Type': 'application/json'
             }
