@@ -108,7 +108,7 @@ $(document).ready(function () {
         e.preventDefault();
         let room_name = $('#create-room-input').val();
         create_room(room_name).then( room => {
-            window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room.id);
+            load_room_list(room.id)
         })
         $('#create-modal').modal('hide');
     });
@@ -293,6 +293,7 @@ $(document).ready(function () {
     }
 
     function load_room_list(activate_room_id) {
+        $('div#room-list').empty();
         get_room_list().then(rooms => {
             jQuery.each(rooms, function () {
                 append_room_list(this.id, this.name, this.owner_id, activate_room_id == this.id);

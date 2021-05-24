@@ -1,6 +1,6 @@
 from chatapp import db, socketio
 from chatapp.models import Room
-from flask import request
+from flask import request, jsonify
 from flask.views import MethodView
 from flask_login import current_user, login_required
 from flask_socketio import join_room
@@ -21,7 +21,7 @@ class CreateRoom(MethodView):
             join_room(room.id, current_user.session_id, '/')
             # socketio.send(
             #     f'{current_user.username} has entered the room.', room=room.id)
-            return {'name': room_name, 'id': room.id}
+            return jsonify({'name': room_name, 'id': room.id})
         return '0'
 
 
