@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import InputRequired, Length, EqualTo, ValidationError
-from user.models import User
+from chatapp.models import User
 
 
 class RegistrationForm(FlaskForm):

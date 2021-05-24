@@ -1,4 +1,4 @@
-from user import login_manager, db
+from chatapp import login_manager, db
 from flask_login import UserMixin
 import datetime
 

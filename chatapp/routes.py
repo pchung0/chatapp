@@ -1,12 +1,13 @@
 import functools
 from flask import render_template, redirect, url_for, flash, session, jsonify
-from flask_login import login_required, current_user
+from flask_login import login_required, login_user, logout_user, current_user
 from flask_socketio import join_room, leave_room, disconnect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.urls import url_parse
-from chatroom import app, login_manager, db, socketio
-from chatroom.models import User, Room
-from chatroom.socket import *
+from chatapp import app, login_manager, db, socketio
+from chatapp.form import RegistrationForm, LoginForm
+from chatapp.models import User, Room
+from chatapp.socket import *
 
 
 @app.route('/')
@@ -21,14 +22,16 @@ def home():
 def create_room():
     if request.get_json():
         room_name = request.json['room_name']
+        print(room_name)
         room = Room(name=room_name, owner_id=current_user.id)
         room.users.append(current_user)
         db.session.add(room)
         db.session.commit()
-
+        print(room.id)
         join_room(room.id, current_user.session_id, '/')
         socketio.emit('redirect room', room.id)
-        socketio.send(f'{current_user.username} has entered the room.', room=room.id)
+        socketio.send(
+            f'{current_user.username} has entered the room.', room=room.id)
         return '1'
     return '0'
 
@@ -42,7 +45,8 @@ def enter_room(room_id):
     room = Room.query.filter_by(id=room_id).first()
     if room and current_user in room.users:
         join_room(room_id, current_user.session_id, '/')
-        rooms = [{'id': room.id, 'name': room.name} for room in current_user.rooms]
+        rooms = [{'id': room.id, 'name': room.name}
+                 for room in current_user.rooms]
         return render_template('room.html', current_room=room)
     return redirect(url_for('home'))
 
@@ -74,22 +78,29 @@ def room_message(room_id):
     if room:
         messages = [{'message': msg.message, 'user_id': msg.user_id,
                      'datetime': msg.datetime.strftime('%I:%M %p | %b %d'),
-                     'username' : msg.user.username} for msg in room.messages]
-        usernames = [user.username for user in room.users if user.id == room.owner_id]
-        usernames.extend([user.username for user in room.users if user.id != room.owner_id])
-        data = {'id':room_id, 'name':room.name, 'owner_id':room.owner_id, 'messages':messages, 'users':usernames}
+                     'username': msg.user.username} for msg in room.messages]
+        usernames = [
+            user.username for user in room.users if user.id == room.owner_id]
+        usernames.extend(
+            [user.username for user in room.users if user.id != room.owner_id])
+        data = {'id': room_id, 'name': room.name, 'owner_id': room.owner_id,
+                'messages': messages, 'users': usernames}
         return data
     return '0'
+
 
 @app.route('/room/<path:room_id>/users', methods=['Get'])
 @login_required
 def get_room_users(room_id):
     room = Room.query.filter_by(id=room_id).first()
     if current_user in room.users:
-        usernames = [user.username for user in room.users if user.id == room.owner_id]
-        usernames.extend([user.username for user in room.users if user.id != room.owner_id])
+        usernames = [
+            user.username for user in room.users if user.id == room.owner_id]
+        usernames.extend(
+            [user.username for user in room.users if user.id != room.owner_id])
         return jsonify(usernames)
     return '0'
+
 
 @app.route('/room/<path:room_id>/users', methods=['POST'])
 @login_required
@@ -109,7 +120,8 @@ def invite_users(room_id):
 @app.route('/room_list', methods=['GET'])
 @login_required
 def room_list():
-    rooms = [{'id': room.id, 'name': room.name, 'owner_id': room.owner_id} for room in current_user.rooms]
+    rooms = [{'id': room.id, 'name': room.name, 'owner_id': room.owner_id}
+             for room in current_user.rooms]
     return jsonify(rooms)
 
 
@@ -135,15 +147,45 @@ def get_not_member_users(room_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    return redirect('http://127.0.0.1:5000/register')
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hased_password = generate_password_hash(form.password.data)
+        user = User(first_name=form.first_name.data,
+                    last_name=form.last_name.data,
+                    username=form.username.data,
+                    password=hased_password)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('home'))
+    else:
+        print('fail')
+    return render_template('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    return redirect('http://127.0.0.1:5000/login')
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        print(form.username.errors)
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            # flash('Login Suceed')
+            next_page = request.args.get('next')
+            if not next_page or url_parse(next_page).netloc != '':
+                next_page = url_for('home')
+            return redirect(next_page)
+        else:
+            flash('Login Failed. Please check username and password', 'danger')
+    return render_template('login.html', form=form)
 
 
 @app.route("/logout")
 @login_required
 def logout():
-    return redirect('http://127.0.0.1:5000/logout')
+    logout_user()
+    return redirect(url_for('login'))

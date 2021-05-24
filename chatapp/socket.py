@@ -3,8 +3,8 @@ import datetime
 from flask import request, session
 from flask_login import current_user
 from flask_socketio import join_room, leave_room, close_room, disconnect
-from chatroom import socketio, db
-from chatroom.models import Room, Message, User
+from chatapp import socketio, db
+from chatapp.models import Room, Message, User
 
 
 def authenticated_only(f):
