@@ -29,10 +29,9 @@ def create_room():
         db.session.commit()
         print(room.id)
         join_room(room.id, current_user.session_id, '/')
-        socketio.emit('redirect room', room.id)
         socketio.send(
             f'{current_user.username} has entered the room.', room=room.id)
-        return '1'
+        return {'name': room_name, 'id': room.id}
     return '0'
 
 

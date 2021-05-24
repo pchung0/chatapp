@@ -107,11 +107,10 @@ $(document).ready(function () {
         console.log('create');
         e.preventDefault();
         let room_name = $('#create-room-input').val();
-        create_room(room_name);
+        create_room(room_name).then( room => {
+            window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room.id);
+        })
         $('#create-modal').modal('hide');
-        socket.on('redirect room', function (room_id) {
-            window.location.replace('http://' + document.domain + ':' + location.port + '/room/' + room_id);
-        });
     });
 
     $('#confirm-delete').find('.btn-ok').click(function () {
@@ -252,7 +251,7 @@ $(document).ready(function () {
                 'Content-Type': 'application/json'
             }
         });
-        const myJson = await response.text();
+        return await response.json();
     };
 
     const invite_room = async (room_id, usernames) => {
