@@ -37,7 +37,8 @@ def handle_connect():
 def handle_send(msg):
     msg['datetime'] = datetime.datetime.now().strftime('%I:%M %p | %b %d')
     socketio.emit('message', msg, room=int(msg['room_id']))
-    message = Message(message=msg['message'], room_id=msg['room_id'], user_id=msg['user_id'])
+    message = Message(message=msg['message'],
+                      room_id=msg['room_id'], user_id=msg['user_id'])
     db.session.add(message)
     db.session.commit()
 
@@ -90,7 +91,6 @@ def handle_send(msg):
 #         if user:
 #             room.users.append(user)
 #     db.session.commit()
-
 
     # room = Room.query.filter_by(name=room_name).first()
     # if room:

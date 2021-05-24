@@ -214,7 +214,7 @@ $(document).ready(function () {
     }
 
     const get_room_list = async () => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room_list');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/rooms');
         const room_list = await response.json();
         return room_list;
     };
@@ -244,7 +244,7 @@ $(document).ready(function () {
     };
 
     const create_room = async (new_room_name) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room', {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/create_room', {
             method: 'POST',
             body: JSON.stringify({ room_name: new_room_name }), // string or object
             headers: {
