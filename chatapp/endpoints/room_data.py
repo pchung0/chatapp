@@ -1,3 +1,4 @@
+from flask.json import jsonify
 from chatapp.models import Room
 from flask.views import MethodView
 from flask_login import login_required
@@ -18,7 +19,7 @@ class RoomData(MethodView):
                 [user.username for user in room.users if user.id != room.owner_id])
             data = {'id': room_id, 'name': room.name, 'owner_id': room.owner_id,
                     'messages': messages, 'users': usernames}
-            return data
+            return jsonify(data)
         return '0'
 
 

@@ -45,7 +45,7 @@ $(document).ready(function () {
             $('#username-dropdown').empty();
             get_not_in_room_users(current_room_id).then(users => {
                 jQuery.each(users, function () {
-                    $('#username-dropdown').append('<a class="dropdown-item" href="#">' + this.username + '</a>');
+                    $('#username-dropdown').append('<a class="dropdown-item" href="#">' + this + '</a>');
                 });
             });
         }
@@ -232,7 +232,7 @@ $(document).ready(function () {
     // }
 
     const get_not_in_room_users = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'not_members');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/users?room=' + room_id + '&' + 'nonmembers=1');
         const users = await response.json();
         return users;
     };
