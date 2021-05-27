@@ -19,7 +19,6 @@ class LoginPage(MethodView):
             return redirect(url_for('home'))
         form = LoginForm()
         if form.validate_on_submit():
-            print(form.username.errors)
             user = User.query.filter_by(username=form.username.data).first()
             if user and check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)

@@ -2,14 +2,12 @@ from chatapp.models import Room
 from flask import redirect, render_template, session, url_for
 from flask.views import MethodView
 from flask_login import current_user, login_required
-from flask_socketio import join_room, leave_room
 
 
 class RoomPage(MethodView):
     decorators = [login_required]
 
     def get(self, room_id=None):
-        print('room page')
         if room_id is None:
             return render_template('room.html', current_room=None)
 
@@ -22,4 +20,5 @@ class RoomPage(MethodView):
 
 def register(app):
     app.add_url_rule("/", view_func=RoomPage.as_view("home"))
-    app.add_url_rule("/rooms/<int:room_id>",view_func=RoomPage.as_view("room"))
+    app.add_url_rule("/rooms/<int:room_id>",
+                     view_func=RoomPage.as_view("room"))

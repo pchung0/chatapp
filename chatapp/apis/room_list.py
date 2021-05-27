@@ -17,15 +17,11 @@ class RoomList(MethodView):
     def post(self):
         if request.get_json():
             room_name = request.json['room_name']
-            print(room_name)
             room = Room(name=room_name, owner_id=current_user.id)
             room.users.append(current_user)
             db.session.add(room)
             db.session.commit()
-            print(room.id)
             join_room(room.id, session['sid'], '/')
-            # socketio.send(
-            #     f'{current_user.username} has entered the room.', room=room.id)
             return jsonify({'name': room_name, 'id': room.id})
         return '0'
 

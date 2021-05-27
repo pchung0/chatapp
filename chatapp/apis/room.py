@@ -27,8 +27,6 @@ class Room(MethodView):
 
     def delete(self, room_id):
         room = m.Room.query.filter_by(id=room_id).first()
-        print('--------------------')
-        print(room)
         if room and current_user.id == room.owner_id:
             close_room(room.id, session['sid'])
             db.session.delete(room)
@@ -44,4 +42,5 @@ class Room(MethodView):
 
 
 def register(app):
-    app.add_url_rule("/api/rooms/<int:room_id>", view_func=Room.as_view("room_api"))
+    app.add_url_rule("/api/rooms/<int:room_id>",
+                     view_func=Room.as_view("room_api"))

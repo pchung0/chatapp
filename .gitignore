@@ -4,3 +4,6 @@ venv
 package.json
 .eslintrc.js
 screenshots
+flask_session
+sql.db
+
