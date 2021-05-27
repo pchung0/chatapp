@@ -68,7 +68,7 @@ $(document).ready(function () {
         $(this).addClass('active').removeClass('list-group-item-light');
         $('div.chat-box').empty();
         load_room(room_id);
-        history.pushState('data to be passed', '', '/room/' + room_id);
+        history.pushState('data to be passed', '', '/rooms/' + room_id);
     });
 
     socket.on('connect', function () {
@@ -167,7 +167,7 @@ $(document).ready(function () {
 
     function init() {
         let room_id = -1;
-        if (window.location.pathname.match(/^\/room\/[0-9]+$/g)) {
+        if (window.location.pathname.match(/^\/rooms\/[0-9]+$/g)) {
             room_id = window.location.pathname.split("/").slice(-1)[0];
             load_room(room_id);
         }
@@ -214,13 +214,13 @@ $(document).ready(function () {
     }
 
     const get_room_list = async () => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/rooms');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms');
         const room_list = await response.json();
         return room_list;
     };
 
     const get_room = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/data');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id);
         const messages = await response.json();
         return messages;
     };
@@ -232,19 +232,19 @@ $(document).ready(function () {
     // }
 
     const get_not_in_room_users = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/users?room=' + room_id + '&' + 'nonmembers=1');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/users?room=' + room_id + '&' + 'nonmembers=1');
         const users = await response.json();
         return users;
     };
 
     const get_room_members = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id + '/' + 'users');
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id + '/users');
         const users = await response.json();
         return users;
     };
 
     const create_room = async (new_room_name) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/create_room', {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms', {
             method: 'POST',
             body: JSON.stringify({ room_name: new_room_name }), // string or object
             headers: {
@@ -255,7 +255,7 @@ $(document).ready(function () {
     };
 
     const invite_room = async (room_id, usernames) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/invite', {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id + '/users', {
             method: 'POST',
             body: JSON.stringify({ 'room_id': room_id, 'users': usernames }), // string or object
             headers: {
@@ -266,7 +266,7 @@ $(document).ready(function () {
     };
 
     const delete_room = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/room/' + room_id, {
+        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id, {
             method: 'DELETE'
         });
         const myJson = await response.text();

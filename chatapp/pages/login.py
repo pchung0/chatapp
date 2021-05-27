@@ -7,7 +7,7 @@ from werkzeug.security import check_password_hash
 from werkzeug.urls import url_parse
 
 
-class Login(MethodView):
+class LoginPage(MethodView):
     def get(self):
         if current_user.is_authenticated:
             return redirect(url_for('home'))
@@ -34,4 +34,4 @@ class Login(MethodView):
 
 
 def register(app):
-    app.add_url_rule("/login", view_func=Login.as_view("login"))
+    app.add_url_rule("/login", view_func=LoginPage.as_view("login"))

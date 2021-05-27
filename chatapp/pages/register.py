@@ -7,7 +7,7 @@ from flask_login import current_user
 from werkzeug.security import generate_password_hash
 
 
-class Register(MethodView):
+class RegisterPage(MethodView):
     def get(self):
         if current_user.is_authenticated:
             return redirect(url_for('home'))
@@ -33,4 +33,4 @@ class Register(MethodView):
 
 
 def register(app):
-    app.add_url_rule("/register", view_func=Register.as_view("register"))
+    app.add_url_rule("/register", view_func=RegisterPage.as_view("register"))

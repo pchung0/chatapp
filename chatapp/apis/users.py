@@ -32,4 +32,4 @@ class Users(MethodView):
 
 
 def register(app):
-    app.add_url_rule("/users", view_func=Users.as_view("users"))
+    app.add_url_rule("/api/users", view_func=Users.as_view("users_api"))

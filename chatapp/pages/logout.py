@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask_login import login_required, logout_user
 
 
-class Logout(MethodView):
+class LogoutPage(MethodView):
     decorators = [login_required]
 
     def get(self):
@@ -12,4 +12,4 @@ class Logout(MethodView):
 
 
 def register(app):
-    app.add_url_rule("/logout", view_func=Logout.as_view("logout"))
+    app.add_url_rule("/logout", view_func=LogoutPage.as_view("logout"))

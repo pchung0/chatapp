@@ -6,7 +6,7 @@ from chatapp import secretkey
 import pkgutil
 from importlib import import_module
 
-from . import endpoints
+from .  import pages, apis
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secretkey.secret_key
@@ -23,9 +23,14 @@ db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
 
+
 def __register_endpoints(app):
-    for _, endpoint_name, _ in pkgutil.iter_modules(endpoints.__path__):
-        endpoint = import_module(f"{endpoints.__name__}.{endpoint_name}")
+    for _, endpoint_name, _ in pkgutil.iter_modules(pages.__path__):
+        endpoint = import_module(f"{pages.__name__}.{endpoint_name}")
+        register = getattr(endpoint, "register")
+        register(app)
+    for _, endpoint_name, _ in pkgutil.iter_modules(apis.__path__):
+        endpoint = import_module(f"{apis.__name__}.{endpoint_name}")
         register = getattr(endpoint, "register")
         register(app)
 
