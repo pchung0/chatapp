@@ -109,6 +109,9 @@ $(document).ready(function () {
         let room_name = $('#create-room-input').val();
         create_room(room_name).then( room => {
             load_room_list(room.id)
+            $('div.chat-box').empty();
+            load_room(room.id);
+            history.pushState('data to be passed', '', '/rooms/' + room.id);
         })
         $('#create-modal').modal('hide');
     });

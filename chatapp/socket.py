@@ -28,7 +28,9 @@ def authenticated_only(f):
 def handle_connect():
     for room in current_user.rooms:
         join_room(room.id)
-        # print(f'room info: {room.id} {room.name}')
+    session['sid'] = request.sid
+
+    # print(f'room info: {room.id} {room.name}')
     # socketio.emit('room info', room)
 
 

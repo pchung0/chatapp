@@ -16,12 +16,14 @@ class Users(MethodView):
             return jsonify(list(set(self.get_all_users()) - set(self.get_room_users(room))))
         return jsonify([])
 
-    def get_all_users(self) -> list[str]:
+    @staticmethod
+    def get_all_users() -> list[str]:
         usernames = User.query.with_entities(User.username).all()
         usernames = [username[0] for username in usernames]
         return usernames
 
-    def get_room_users(self, room_id: int) -> list[str]:
+    @staticmethod
+    def get_room_users(room_id: int) -> list[str]:
         if room := Room.query.filter_by(id=room_id).first():
             usernames = [
                 user.username for user in room.users if user.id == room.owner_id]

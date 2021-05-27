@@ -1,6 +1,6 @@
 from chatapp import db
 from chatapp import models as m
-from flask import jsonify, request
+from flask import jsonify, request, session
 from flask.json import jsonify
 from flask.views import MethodView
 from flask_login import current_user, login_required
@@ -30,13 +30,13 @@ class Room(MethodView):
         print('--------------------')
         print(room)
         if room and current_user.id == room.owner_id:
-            close_room(room.id, current_user.session_id)
+            close_room(room.id, session['sid'])
             db.session.delete(room)
             m.Message.query.filter_by(room_id=room_id).delete()
             db.session.commit()
             return '1'
         elif current_user in room.users:
-            leave_room(room.id, current_user.session_id, '/')
+            leave_room(room.id, session['sid'], '/')
             room.users.remove(current_user)
             db.session.commit()
             return '1'

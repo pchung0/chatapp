@@ -18,10 +18,9 @@ class User(db.Model, UserMixin):
     first_name = db.Column(db.String(26), nullable=False, default='Mike')
     last_name = db.Column(db.String(26), nullable=False, default='Stone')
     password = db.Column(db.String(120), nullable=False, default=123456)
+    own_rooms = db.relationship('Room', back_populates='owner')
     rooms = db.relationship('Room', secondary=roomref, back_populates='users')
     messages = db.relationship('Message', back_populates='user')
-
-    session_id = -1
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -35,6 +34,7 @@ class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner = db.relationship('User', back_populates='own_rooms')
     users = db.relationship('User', secondary=roomref, back_populates='rooms')
     messages = db.relationship('Message', back_populates='room', passive_deletes=True)
 

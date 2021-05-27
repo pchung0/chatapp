@@ -13,14 +13,9 @@ class RoomPage(MethodView):
         if room_id is None:
             return render_template('room.html', current_room=None)
 
-        if 'room' in session:
-            leave_room(session['room'], current_user.session_id, '/')
         session['room'] = room_id
         room = Room.query.filter_by(id=room_id).first()
         if room and current_user in room.users:
-            join_room(room_id, current_user.session_id, '/')
-            rooms = [{'id': room.id, 'name': room.name}
-                     for room in current_user.rooms]
             return render_template('room.html', current_room=room)
         return redirect(url_for('home'))
 

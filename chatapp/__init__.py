@@ -5,12 +5,15 @@ from flask_login import LoginManager
 from chatapp import secretkey
 import pkgutil
 from importlib import import_module
+from flask_session import Session
 
 from .  import pages, apis
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secretkey.secret_key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../sql.db'
+app.config['SESSION_TYPE'] = 'filesystem'
+
 # app.config['SQLALCHEMY_ECHO'] = True
 
 login_manager = LoginManager(app)
@@ -19,8 +22,9 @@ login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
 
 
+Session(app)
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app, manage_session=False)
 
 
 
@@ -34,6 +38,5 @@ def __register_endpoints(app):
         register = getattr(endpoint, "register")
         register(app)
 
-
+from chatapp.socket import handle_connect, handle_send
 __register_endpoints(app)
-from chatapp.socket import *
