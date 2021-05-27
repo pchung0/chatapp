@@ -1,3 +1,4 @@
+# type: ignore
 from chatapp import login_manager, db
 from flask_login import UserMixin
 import datetime
@@ -7,10 +8,13 @@ import datetime
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-roomref = db.Table('roomref',
+
+roomref = db.Table(
+    'roomref',
     db.Column('room_id', db.Integer, db.ForeignKey('room.id'), primary_key=True),
     db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
 )
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,6 +34,7 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.id}', '{self.username}', '{self.first_name}', '{self.last_name}')"
 
+
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), nullable=False)
@@ -40,6 +45,7 @@ class Room(db.Model):
 
     def __repr__(self):
         return f"Room('{self.id}', '{self.name}', '{self.owner_id}', '{self.users})"
+
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
