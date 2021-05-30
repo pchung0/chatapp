@@ -11,6 +11,7 @@ class Room(MethodView):
     decorators = [login_required]
 
     def get(self, room_id):
+        '''get room data: id, name, owner, messages, and users'''
         room = m.Room.query.filter_by(id=room_id).first()
         if room:
             messages = [{'message': msg.message, 'user_id': msg.user_id,
@@ -28,6 +29,7 @@ class Room(MethodView):
         return '0'
 
     def delete(self, room_id):
+        '''delete the room'''
         room = m.Room.query.filter_by(id=room_id).first()
         if room and current_user.id == room.owner_id:
             close_room(str(room.id), session['sid'])

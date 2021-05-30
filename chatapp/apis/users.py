@@ -5,14 +5,15 @@ from flask.views import MethodView
 
 class Users(MethodView):
     def get(self):
+        '''get usernames based on the parameters provided'''
         room_id = request.args.get('room', default=0, type=int)
         nonmembers = request.args.get('nonmembers', default=0, type=int)
 
-        if not room_id and not nonmembers:
+        if not room_id and not nonmembers:  # all users
             return jsonify(self.get_all_users())
-        elif room_id and not nonmembers:
+        elif room_id and not nonmembers:  # users in the room
             return jsonify(self.get_room_users(room_id))
-        elif room_id and nonmembers:
+        elif room_id and nonmembers:    # users not in the room
             return jsonify(list(set(self.get_all_users()) - set(self.get_room_users(room_id))))
         return jsonify([])
 

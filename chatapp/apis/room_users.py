@@ -7,6 +7,7 @@ from flask_login import current_user
 
 class RoomUsers(MethodView):
     def get(self, room_id):
+        '''get usernames of all users in the room'''
         if room := Room.query.filter_by(id=room_id).first():
             usernames = [user.username for user in room.users]
         else:
@@ -14,6 +15,7 @@ class RoomUsers(MethodView):
         return jsonify(usernames)
 
     def post(self, room_id):
+        '''add a new user to the room'''
         if request.get_json():
             room = Room.query.filter_by(id=room_id).first()
             if current_user in room.users:
