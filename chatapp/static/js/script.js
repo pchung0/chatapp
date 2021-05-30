@@ -2,7 +2,7 @@ $(document).ready(function () {
     var socket = io.connect('http://' + document.domain + ':' + location.port);
     var current_room_id;
     var current_room_name;
-    var current_room_owner_id;
+    var current_room_owner;
     var current_user_id = $('#username').attr('data-user-id');
     var current_username = $('#username').text();
 
@@ -158,7 +158,7 @@ $(document).ready(function () {
 
     socket.on('message', function (msg) {
         if (current_room_id == msg.room_id) {
-            if (current_user_id == msg.user_id)
+            if (current_username == msg.username)
                 append_receiver_chat_box(msg.message, msg.datetime);
             else
                 append_sender_chat_box(msg.message, msg.datetime, msg.username);
@@ -184,13 +184,14 @@ $(document).ready(function () {
         get_room(room_id).then(room => {
             current_room_id = room.id;
             current_room_name = room.name;
-            current_room_owner_id = room.owner_id;
+            current_room_owner = room.owner;
+
 
             room.users[0] = room.users[0] + ' (owner)';
             $('#chatroom-title').attr('title', 'Members:\r\n' + room.users.join('\r\n'));
             $('#chatroom-title').text(current_room_name);
             $('.current-room').text(current_room_name);
-            update_delete_leave_button(current_user_id == current_room_owner_id);
+            update_delete_leave_button(current_username == current_room_owner);
             render_messages(room.messages);
             scroll_bottom('chat-box');
         });
@@ -275,20 +276,9 @@ $(document).ready(function () {
         const myJson = await response.text();
     };
 
-    // function render_messages() {
-    //     get_room(current_room_id).then(room => {
-    //         jQuery.each(room.messages, function () {
-    //             if (this.user_id == current_user_id)
-    //                 append_receiver_chat_box(this.message, this.datetime);
-    //             else
-    //                 append_sender_chat_box(this.message, this.datetime, this.username);
-    //         });
-    //     });
-    // }
-
     function render_messages(messages) {
         jQuery.each(messages, function () {
-            if (this.user_id == current_user_id)
+            if (this.username == current_username)
                 append_receiver_chat_box(this.message, this.datetime);
             else
                 append_sender_chat_box(this.message, this.datetime, this.username);

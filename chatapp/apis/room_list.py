@@ -10,7 +10,7 @@ class RoomList(MethodView):
     decorators = [login_required]
 
     def get(self):
-        rooms = [{'id': room.id, 'name': room.name, 'owner_id': room.owner_id}
+        rooms = [{'id': room.id, 'name': room.name, 'owner': room.owner.username}
                  for room in current_user.rooms]
         return jsonify(rooms)
 
@@ -21,7 +21,7 @@ class RoomList(MethodView):
             room.users.append(current_user)
             db.session.add(room)
             db.session.commit()
-            join_room(room.id, session['sid'], '/')
+            join_room(str(room.id), session['sid'], '/')
             return jsonify({'name': room_name, 'id': room.id})
         return '0'
 

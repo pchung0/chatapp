@@ -20,16 +20,16 @@ def authenticated_only(f):
 @socketio.on('connect')
 @authenticated_only
 def handle_connect():
-    for room in current_user.rooms:
-        join_room(room.id)
     session['sid'] = request.sid
+    for room in current_user.rooms:
+        join_room(str(room.id))
 
 
 @socketio.on('send')
 @authenticated_only
 def handle_send(msg):
     msg['datetime'] = datetime.datetime.now().strftime('%I:%M %p | %b %d')
-    socketio.emit('message', msg, room=int(msg['room_id']))
+    socketio.emit('message', msg, to=str(msg['room_id']))
     message = Message(message=msg['message'],
                       room_id=msg['room_id'], user_id=msg['user_id'])
     db.session.add(message)

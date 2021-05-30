@@ -16,25 +16,27 @@ class Room(MethodView):
             messages = [{'message': msg.message, 'user_id': msg.user_id,
                         'datetime': msg.datetime.strftime('%I:%M %p | %b %d'),
                          'username': msg.user.username} for msg in room.messages]
-            usernames = [
-                user.username for user in room.users if user.id == room.owner_id]
-            usernames.extend(
-                [user.username for user in room.users if user.id != room.owner_id])
-            data = {'id': room_id, 'name': room.name, 'owner_id': room.owner_id,
-                    'messages': messages, 'users': usernames}
+            usernames = [user.username for user in room.users]
+            data = {
+                'id': room_id,
+                'name': room.name,
+                'owner': room.owner.username,
+                'messages': messages,
+                'users': usernames,
+            }
             return jsonify(data)
         return '0'
 
     def delete(self, room_id):
         room = m.Room.query.filter_by(id=room_id).first()
         if room and current_user.id == room.owner_id:
-            close_room(room.id, session['sid'])
+            close_room(str(room.id), session['sid'])
             db.session.delete(room)
             m.Message.query.filter_by(room_id=room_id).delete()
             db.session.commit()
             return '1'
         elif current_user in room.users:
-            leave_room(room.id, session['sid'], '/')
+            leave_room(str(room.id), session['sid'], '/')
             room.users.remove(current_user)
             db.session.commit()
             return '1'

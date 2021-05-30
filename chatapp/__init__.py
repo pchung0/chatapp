@@ -37,5 +37,5 @@ def __register_endpoints(app):
         register = getattr(endpoint, "register")
         register(app)
 
-from chatapp.socket import handle_connect, handle_send
 __register_endpoints(app)
+from chatapp.socket import handle_connect, handle_send

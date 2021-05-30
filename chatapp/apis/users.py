@@ -5,15 +5,15 @@ from flask.views import MethodView
 
 class Users(MethodView):
     def get(self):
-        room = request.args.get('room', default=0, type=int)
+        room_id = request.args.get('room', default=0, type=int)
         nonmembers = request.args.get('nonmembers', default=0, type=int)
 
-        if not room and not nonmembers:
+        if not room_id and not nonmembers:
             return jsonify(self.get_all_users())
-        elif room and not nonmembers:
-            return jsonify(self.get_room_users(room))
-        elif room and nonmembers:
-            return jsonify(list(set(self.get_all_users()) - set(self.get_room_users(room))))
+        elif room_id and not nonmembers:
+            return jsonify(self.get_room_users(room_id))
+        elif room_id and nonmembers:
+            return jsonify(list(set(self.get_all_users()) - set(self.get_room_users(room_id))))
         return jsonify([])
 
     @staticmethod
@@ -25,10 +25,7 @@ class Users(MethodView):
     @staticmethod
     def get_room_users(room_id: int) -> list[str]:
         if room := Room.query.filter_by(id=room_id).first():
-            usernames = [
-                user.username for user in room.users if user.id == room.owner_id]
-            usernames.extend(
-                [user.username for user in room.users if user.id != room.owner_id])
+            usernames = [user.username for user in room.users]
             return usernames
         return []
 
