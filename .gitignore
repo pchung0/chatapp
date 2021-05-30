@@ -1,9 +1,10 @@
 __pycache__
 venv
 .vscode
-package.json
 .eslintrc.js
 screenshots
 flask_session
 sql.db
-
+node_modules
+package.json
+package-lock.json
