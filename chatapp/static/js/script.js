@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
+    var socket = io.connect(`http://${document.domain}:${location.port}`);
     var current_room_id;
     var current_room_name;
     var current_room_owner;
@@ -8,8 +8,6 @@ $(document).ready(function () {
 
     $("#invite-input").on("keyup", function (e) {
         var value = $(this).val().toLowerCase();
-        // $('#username-dropdown a:contains()')
-        // $('.input-holder span').text()
 
         $('.dropdown-menu a').filter(function () {
             $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
@@ -17,7 +15,7 @@ $(document).ready(function () {
 
         $('.input-holder span').each(function(){
             var username = $(this).text();
-            $(".dropdown-menu a:contains('" + username + "')").toggle(false);
+            $(`.dropdown-menu a:contains('${username}')`).toggle(false);
         });
     });
 
@@ -34,7 +32,7 @@ $(document).ready(function () {
         e.preventDefault();
         var username = $(this).html();
         $(this).toggle(false);
-        $('#invite-input').before('<span class="badge badge-secondary align-self-center mr-1">' + username + '</span>');
+        $('#invite-input').before(`<span class="badge badge-secondary align-self-center mr-1">${username}</span>`);
         $('#invite-input').val('').focus();
     });
 
@@ -45,7 +43,7 @@ $(document).ready(function () {
             $('#username-dropdown').empty();
             get_not_in_room_users(current_room_id).then(users => {
                 jQuery.each(users, function () {
-                    $('#username-dropdown').append('<a class="dropdown-item" href="#">' + this + '</a>');
+                    $('#username-dropdown').append(`<a class="dropdown-item" href="#">${this}</a>`);
                 });
             });
         }
@@ -68,7 +66,7 @@ $(document).ready(function () {
         $(this).addClass('active').removeClass('list-group-item-light');
         $('div.chat-box').empty();
         load_room(room_id);
-        history.pushState('data to be passed', '', '/rooms/' + room_id);
+        history.pushState('data to be passed', '', `/rooms/${room_id}`);
     });
 
     socket.on('connect', function () {
@@ -111,7 +109,7 @@ $(document).ready(function () {
             load_room_list(room.id)
             $('div.chat-box').empty();
             load_room(room.id);
-            history.pushState('data to be passed', '', '/rooms/' + room.id);
+            history.pushState('data to be passed', '', `/rooms/${room.id}`);
         })
         $('#create-modal').modal('hide');
     });
@@ -126,19 +124,6 @@ $(document).ready(function () {
         delete_room(current_room_id);
         history.pushState('data to be passed', '', '');
     });
-
-    // $('#confirm-delete').on('show.bs.modal', function () {
-    //     $(this).find('.btn-ok').click(function () {
-    //         console.log('delet');
-    //         $('#confirm-delete').modal('hide');
-    //         $('#chatroom-title').text('');
-    //         $('.room-modal').addClass('d-none');
-    //         $('#room-list a.active').remove();
-    //         $('div.chat-box').empty();
-    //         delete_room(current_room_id);
-    //         history.pushState('data to be passed', '', '');
-    //     });
-    // });
 
     $('#join').click(function () {
         let room = $('#room').val();
@@ -164,7 +149,7 @@ $(document).ready(function () {
                 append_sender_chat_box(msg.message, msg.datetime, msg.username);
             scroll_bottom('chat-box');
         } else {
-            $('#room-list .room[data-room-id=' + msg.room_id + '] i').removeClass('d-none');
+            $(`#room-list .room[data-room-id=${msg.room_id}] i`).removeClass('d-none');
         }
     });
 
@@ -179,7 +164,7 @@ $(document).ready(function () {
 
     function load_room(room_id){
         $('.room-modal').removeClass('d-none');
-        $('#room-list .room[data-room-id= ' + room_id + '] i').addClass('d-none'); // remove notification dot
+        $(`#room-list .room[data-room-id= ${room_id}] i`).addClass('d-none'); // remove notification dot
 
         get_room(room_id).then(room => {
             current_room_id = room.id;
@@ -187,8 +172,8 @@ $(document).ready(function () {
             current_room_owner = room.owner;
 
 
-            room.users[0] = room.users[0] + ' (owner)';
-            $('#chatroom-title').attr('title', 'Members:\r\n' + room.users.join('\r\n'));
+            room.users[0] = `${room.users[0]} (owner)`;
+            $('#chatroom-title').attr('title', `Members:\n${room.users.join('\n')}`);
             $('#chatroom-title').text(current_room_name);
             $('.current-room').text(current_room_name);
             update_delete_leave_button(current_username == current_room_owner);
@@ -211,46 +196,40 @@ $(document).ready(function () {
 
     function update_member_list(room_id){
         get_room_members(room_id).then(usernames => {
-            usernames[0] = usernames[0] + ' (owner)';
-            $('#chatroom-title').attr('title', 'Members:\r\n' + usernames.join('\r\n'));
+            usernames[0] = `${usernames[0]} (owner)`;
+            $('#chatroom-title').attr('title', `Members:\n${room.users.join('\n')}`);
         });
 
     }
 
     const get_room_list = async () => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms');
+        const response = await fetch('/api/rooms');
         const room_list = await response.json();
         return room_list;
     };
 
     const get_room = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id);
+        const response = await fetch(`/api/rooms/${room_id}`);
         const messages = await response.json();
         return messages;
     };
 
-    // const get_users = async () => {
-    //     const response = await fetch('http://' + document.domain + ':' + location.port + '/users');
-    //     const users = await response.json();
-    //     return users;
-    // }
-
     const get_not_in_room_users = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/users?room=' + room_id + '&' + 'nonmembers=1');
+        const response = await fetch(`/api/users?room=${room_id}&nonmembers=1`);
         const users = await response.json();
         return users;
     };
 
     const get_room_members = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id + '/users');
+        const response = await fetch(`/api/rooms/${room_id}/users`);
         const users = await response.json();
         return users;
     };
 
     const create_room = async (new_room_name) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms', {
+        const response = await fetch('/api/rooms', {
             method: 'POST',
-            body: JSON.stringify({ room_name: new_room_name }), // string or object
+            body: JSON.stringify({ room_name: new_room_name }),
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -259,9 +238,9 @@ $(document).ready(function () {
     };
 
     const invite_room = async (room_id, usernames) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id + '/users', {
+        const response = await fetch(`/api/rooms/${room_id}/users`, {
             method: 'POST',
-            body: JSON.stringify({ 'room_id': room_id, 'users': usernames }), // string or object
+            body: JSON.stringify({ 'room_id': room_id, 'users': usernames }),
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -270,7 +249,7 @@ $(document).ready(function () {
     };
 
     const delete_room = async (room_id) => {
-        const response = await fetch('http://' + document.domain + ':' + location.port + '/api/rooms/' + room_id, {
+        const response = await fetch(`/api/rooms/${room_id}`, {
             method: 'DELETE'
         });
         const myJson = await response.text();
@@ -302,10 +281,10 @@ $(document).ready(function () {
                     width="50" class="rounded-circle">
                 <div class="media-body ml-3">
                     <div class="bg-light rounded py-2 px-3 mb-2">
-                        <p class="text-small font-weight-bold">` + username + `</p>
-                        <p class="text-small mb-0 text-muted">` + message + `</p>
+                        <p class="text-small font-weight-bold">${username}</p>
+                        <p class="text-small mb-0 text-muted">${message}</p>
                     </div>
-                    <p class="small text-muted font-weight-light">` + datetime + `</p>
+                    <p class="small text-muted font-weight-light">${datetime}</p>
                 </div>
             </div>
             `
@@ -318,9 +297,9 @@ $(document).ready(function () {
             <div class="media w-50 ml-auto mb-3">
                 <div class="media-body">
                     <div class="bg-primary rounded py-2 px-3 mb-2">
-                        <p class="text-small mb-0 text-white">` + message + `</p>
+                        <p class="text-small mb-0 text-white">${message}</p>
                     </div>
-                    <p class="small text-muted">` + datetime + `</p>
+                    <p class="small text-muted">${datetime}</p>
                 </div>
             </div>
             `
@@ -331,12 +310,12 @@ $(document).ready(function () {
         if (activate) {
             $('div#room-list').append(
                 `
-                <a href="` + id + `" class="room active list-group-item list-group-item-action rounded-0" data-room-id="`
-                + id + `" data-room-name="` + name + `" data-room-owner-id="` + owner_id + `">
+                <a href="${id}" class="room active list-group-item list-group-item-action rounded-0"
+                data-room-id="${id}" data-room-name="${name}" data-room-owner-id="${owner_id}">
                     <div class="media">
                         <div class="media-body ml-2">
                             <div class="d-flex align-items-center justify-content-between mb-1">
-                                <h6 class="mb-0">` + name + `</h6>
+                                <h6 class="mb-0">${name}</h6>
                                 <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
                             </div>
                         </div>
@@ -348,12 +327,12 @@ $(document).ready(function () {
         else {
             $('div#room-list').append(
                 `
-                <a href="` + id + `" class="room list-group-item list-group-item-action list-group-item-light rounded-0" data-room-id="`
-                + id + `" data-room-name="` + name + `" data-room-owner-id="` + owner_id + `">
+                <a href="${id}" class="room list-group-item list-group-item-action list-group-item-light rounded-0"
+                    data-room-id="+ ${id}" data-room-name="${name}" data-room-owner-id="${owner_id}">
                     <div class="media">
                         <div class="media-body ml-2">
                             <div class="d-flex align-items-center justify-content-between mb-1">
-                                <h6 class="mb-0">` + name + `</h6>
+                                <h6 class="mb-0">${name}</h6>
                                 <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
                             </div>
                         </div>
