@@ -6,138 +6,158 @@ $(document).ready(() => {
   const current_user_id = $('#username').attr('data-user-id');
   const current_username = $('#username').text();
 
-  socket.on('connect', () => {
-    socket.emit('my event', {
-      data: 'User Connected',
-    });
-  });
-
-  socket.on('message', (msg) => {
-    if (current_room_id === msg.room_id) {
-      if (current_username === msg.username) {
-        append_receiver_chat_box(msg.message, msg.datetime);
-      } else {
-        append_sender_chat_box(msg.message, msg.datetime, msg.username);
-      }
-      scroll_bottom('chat-box');
+  function init() {
+    if (window.location.pathname.match(/^\/rooms\/[0-9]+$/g)) {
+      const room_id = parseInt(window.location.pathname.split('/').slice(-1)[0], 10);
+      load_room_list(room_id);
+      load_room(room_id);
     } else {
-      show_notification_dot(msg.room_id);
+      load_room_list();
     }
-  });
 
-  $('#invite-input').on('keyup', (e) => {
-    const user_input = $(e.currentTarget).val().toLowerCase();
+    register_socket_events();
+    register_invite_dropdown_events();
+    register_modal_confirm_button_events();
+    register_toggle_modal_events();
+    register_change_room_event();
+    register_send_message_event();
 
-    // filter out usernames that do not partially match the user input
-    $('.dropdown-menu a').filter(
-      (_, item) => $(item).toggle($(item).text().toLowerCase().indexOf(user_input) > -1),
-    );
-
-    // filter out already selected usernames
-    $('.input-holder span').each((_, username) => {
-      $(`.dropdown-menu a:contains('${$(username).text()}')`).toggle(false);
-    });
-  });
-
-  $('#invite-input').on('keydown', (e) => {
-    const no_input_and_backspace_pressed = $(e.currentTarget).val() === '' && e.which === 8;
-    if (no_input_and_backspace_pressed) {
-      $(e.currentTarget).prev().remove();
-    }
-  });
-
-  $('#invite-input').focus(() => {
-    $('.dropdown').dropdown('show');
-  });
-
-  $('.dropdown-menu').on('click', 'a', (e) => {
-    // e.preventDefault();
-    $(e.currentTarget).toggle(false);
-    const username = $(e.currentTarget).html();
-    $('#invite-input').before(`<span class="badge badge-secondary align-self-center mr-1">${username}</span>`);
-    $('#invite-input').val('').focus();
-  });
-
-  $('.modal').on('shown.bs.modal', (e) => {
-    $(e.currentTarget).find('input').focus();
-    if ($(e.currentTarget).attr('id') === 'invite-modal') {
-      build_invite_dropdown();
-    }
-  });
-
-  $('.modal').on('hidden.bs.modal', (e) => {
-    $('input').val('');
-    if ($(e.currentTarget).attr('id') === 'invite-modal') {
-      $('.dropdown').find('span').remove();
-      $('.dropdown').dropdown('hide');
-    }
-  });
-
-  $('div#room-list').on('click', 'a.room', (e) => {
-    e.preventDefault();
-    const room_id = parseInt($(e.currentTarget).attr('href'), 10);
-    switch_to_room(room_id);
-    window.history.pushState('data to be passed', '', `/rooms/${room_id}`);
-  });
-
-  $('#message-form').on('submit', (e) => {
-    e.preventDefault();
-    if (current_room_id) {
-      const user_input = $('#message-input-box').val();
-      if (user_input) {
-        socket.emit('send', {
-          username: current_username,
-          user_id: current_user_id,
-          room_id: current_room_id,
-          message: user_input,
-        });
+    window.onpopstate = (event) => {
+      if ('room_id' in event.state) {
+        load_room(event.state.room_id);
       }
-    }
-    $('#message-input-box').val('').focus();
-  });
+    };
+  }
 
-  $('#invite-form').on('submit', (e) => {
-    e.preventDefault();
-    const users = [];
-    $('.input-holder span').each((_, element) => { users.push($(element).text()); });
-    $('#invite-modal').modal('hide');
-    invite_users(current_room_id, users).then(() => {
-      update_member_list(current_room_id);
+  function register_socket_events() {
+    socket.on('connect', () => {
+      socket.emit('my event', {
+        data: 'User Connected',
+      });
     });
-  });
 
-  $('#create-form').on('submit', (e) => {
-    e.preventDefault();
-    const room_name = $('#create-room-input').val();
-    create_room(room_name).then((room) => {
-      load_room_list(room.id);
-      $('div.chat-box').empty();
-      load_room(room.id);
-      window.history.pushState('data to be passed', '', `/rooms/${room.id}`);
+    socket.on('message', (msg) => {
+      if (current_room_id === msg.room_id) {
+        if (current_username === msg.username) {
+          append_receiver_chat_box(msg.message, msg.datetime);
+        } else {
+          append_sender_chat_box(msg.message, msg.datetime, msg.username);
+        }
+        scroll_bottom('chat-box');
+      } else {
+        show_notification_dot(msg.room_id);
+      }
     });
-    $('#create-modal').modal('hide');
-  });
+  }
 
-  $('#confirm-delete').find('.btn-ok').click(() => {
-    $('#confirm-delete').modal('hide');
-    $('#chatroom-title').text('');
-    $('.room-modal').addClass('d-none');
-    $('#room-list a.active').remove();
-    $('div.chat-box').empty();
-    delete_room(current_room_id);
-    window.history.pushState('data to be passed', '', '');
-  });
+  function register_change_room_event() {
+    $('div#room-list').on('click', 'a.room', (e) => {
+      e.preventDefault();
+      const room_id = parseInt($(e.currentTarget).attr('href'), 10);
+      load_room(room_id);
+      window.history.pushState({ room_id }, '', `/rooms/${room_id}`);
+    });
+  }
 
-  $('#join').click(() => {
-    const room = $('#room').val();
-    socket.emit('join', room);
-    $('h2#roomname').text(room);
-    $('#room').val('');
-  });
+  function register_send_message_event() {
+    $('#message-form').on('submit', (e) => {
+      e.preventDefault();
+      if (current_room_id) {
+        const user_input = $('#message-input-box').val();
+        if (user_input) {
+          socket.emit('send', {
+            username: current_username,
+            user_id: current_user_id,
+            room_id: current_room_id,
+            message: user_input,
+          });
+        }
+      }
+      $('#message-input-box').val('').focus();
+    });
+  }
 
-  $('#leave').click(() => {
-    socket.emit('leave');
-  });
+  function register_toggle_modal_events() {
+    $('.modal').on('shown.bs.modal', (event) => {
+      if ($(event.currentTarget).attr('id') === 'invite-modal') {
+        build_invite_dropdown();
+      }
+      $(event.currentTarget).find('input').focus();
+    });
+
+    $('.modal').on('hidden.bs.modal', (e) => {
+      $('input').val('');
+      if ($(e.currentTarget).attr('id') === 'invite-modal') {
+        $('.dropdown').find('span').remove();
+        $('.dropdown').dropdown('hide');
+      }
+    });
+  }
+
+  function register_modal_confirm_button_events() {
+    $('#invite-form').on('submit', (e) => {
+      e.preventDefault();
+      const users = [];
+      $('.input-holder span').each((_, element) => { users.push($(element).text()); });
+      $('#invite-modal').modal('hide');
+      invite_users(current_room_id, users).then(() => {
+        update_member_list(current_room_id);
+      });
+    });
+
+    $('#create-form').on('submit', (e) => {
+      e.preventDefault();
+      const room_name = $('#create-room-input').val();
+      create_room(room_name).then((room) => {
+        load_room_list(room.id);
+        load_room(room.id);
+        window.history.pushState({ room_id: room.id }, '', `/rooms/${room.id}`);
+      });
+      $('#create-modal').modal('hide');
+    });
+
+    $('#confirm-delete').find('.btn-ok').click(() => {
+      $('#confirm-delete').modal('hide');
+      clear_room();
+      delete_room(current_room_id);
+      window.history.pushState({}, '', '/');
+    });
+  }
+
+  function register_invite_dropdown_events() {
+    $('#invite-input').on('keyup', (e) => {
+      const user_input = $(e.currentTarget).val().toLowerCase();
+
+      // filter out usernames that do not partially match the user input
+      $('.dropdown-menu a').filter(
+        (_, item) => $(item).toggle($(item).text().toLowerCase().indexOf(user_input) > -1),
+      );
+
+      // filter out already selected usernames
+      $('.input-holder span').each((_, username) => {
+        $(`.dropdown-menu a:contains('${$(username).text()}')`).toggle(false);
+      });
+    });
+
+    $('#invite-input').on('keydown', (e) => {
+      const no_input_and_backspace_pressed = $(e.currentTarget).val() === '' && e.which === 8;
+      if (no_input_and_backspace_pressed) {
+        $(e.currentTarget).prev().remove();
+      }
+    });
+
+    $('#invite-input').on('focus', () => {
+      $('.dropdown').dropdown('show');
+    });
+
+    $('.dropdown-menu').on('click', 'a', (e) => {
+      e.preventDefault();
+      $(e.currentTarget).toggle(false);
+      const username = $(e.currentTarget).html();
+      $('#invite-input').before(`<span class="badge badge-secondary align-self-center mr-1">${username}</span>`);
+      $('#invite-input').val('').focus();
+    });
+  }
 
   function show_notification_dot(room_id) {
     $(`.room[data-room-id=${room_id}] i`).removeClass('d-none');
@@ -149,34 +169,28 @@ $(document).ready(() => {
 
   function build_invite_dropdown() {
     $('#username-dropdown').empty();
-    get_not_in_room_users(current_room_id).then((users) => {
+    fetch_room_nonmembers(current_room_id).then((users) => {
       users.forEach(
         (item) => $('#username-dropdown').append(`<a class="dropdown-item" href="#">${item}</a>`),
       );
     });
   }
 
-  function switch_to_room(room_id) {
-    $('#room-list a.active').addClass('list-group-item-light').removeClass('active');
-    $(`.room[data-room-id=${room_id}]`).addClass('active').removeClass('list-group-item-light');
+  function clear_room() {
+    $('#chatroom-title').text('');
+    $('.room-modal').addClass('d-none');
+    $('#room-list a.active').remove();
     $('div.chat-box').empty();
-    load_room(room_id);
-  }
-
-  function init() {
-    let room_id = -1;
-    if (window.location.pathname.match(/^\/rooms\/[0-9]+$/g)) {
-      room_id = window.location.pathname.split('/').slice(-1)[0];
-      load_room(room_id);
-    }
-    load_room_list(room_id);
   }
 
   function load_room(room_id) {
+    $('#room-list a.active').removeClass('active');
+    $(`.room[data-room-id=${room_id}]`).addClass('active');
+    $('div.chat-box').empty();
     $('.room-modal').removeClass('d-none');
     hide_notification_dot(room_id);
 
-    get_room(room_id).then((room) => {
+    fetch_room(room_id).then((room) => {
       current_room_id = room.id;
       current_room_name = room.name;
       current_room_owner = room.owner;
@@ -204,7 +218,7 @@ $(document).ready(() => {
   }
 
   function update_member_list(room_id) {
-    get_room_members(room_id).then((usernames) => {
+    fetch_room_members(room_id).then((usernames) => {
       const users = usernames;
       users[0] = `${users[0]} (owner)`;
       $('#chatroom-title').attr('title', `Members:\n${users.join('\n')}`);
@@ -259,9 +273,9 @@ $(document).ready(() => {
     );
   }
 
-  function load_room_list(activate_room_id) {
+  function load_room_list(activate_room_id = -1) {
     $('div#room-list').empty();
-    get_room_list().then((rooms) => {
+    fetch_room_list().then((rooms) => {
       rooms.forEach((room) => {
         append_room_list(room.id, room.name, room.owner_id, activate_room_id === room.id);
       });
@@ -286,25 +300,25 @@ $(document).ready(() => {
     );
   }
 
-  const get_room_list = async () => {
+  const fetch_room_list = async () => {
     const response = await fetch('/api/rooms');
     const room_list = await response.json();
     return room_list;
   };
 
-  const get_room = async (room_id) => {
+  const fetch_room = async (room_id) => {
     const response = await fetch(`/api/rooms/${room_id}`);
     const messages = await response.json();
     return messages;
   };
 
-  const get_not_in_room_users = async (room_id) => {
+  const fetch_room_nonmembers = async (room_id) => {
     const response = await fetch(`/api/users?room=${room_id}&nonmembers=1`);
     const users = await response.json();
     return users;
   };
 
-  const get_room_members = async (room_id) => {
+  const fetch_room_members = async (room_id) => {
     const response = await fetch(`/api/rooms/${room_id}/users`);
     const users = await response.json();
     return users;
