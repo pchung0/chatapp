@@ -16,7 +16,7 @@ $(document).ready(() => {
     }
 
     register_socket_events();
-    register_invite_dropdown_events();
+    register_invite_input_dropdown_events();
     register_modal_confirm_button_events();
     register_toggle_modal_events();
     register_change_room_event();
@@ -38,12 +38,8 @@ $(document).ready(() => {
 
     socket.on('message', (msg) => {
       if (current_room_id === msg.room_id) {
-        if (current_username === msg.username) {
-          append_receiver_chat_box(msg.message, msg.datetime);
-        } else {
-          append_sender_chat_box(msg.message, msg.datetime, msg.username);
-        }
-        scroll_bottom('chat-box');
+        append_messages([msg]);
+        scroll_to_bottom('chat-box');
       } else {
         show_notification_dot(msg.room_id);
       }
@@ -124,7 +120,7 @@ $(document).ready(() => {
     });
   }
 
-  function register_invite_dropdown_events() {
+  function register_invite_input_dropdown_events() {
     $('#invite-input').on('keyup', (e) => {
       const user_input = $(e.currentTarget).val().toLowerCase();
 
@@ -176,6 +172,15 @@ $(document).ready(() => {
     });
   }
 
+  function load_room_list(activate_room_id = -1) {
+    $('div#room-list').empty();
+    fetch_room_list().then((rooms) => {
+      rooms.forEach((room) => {
+        append_room_list(room.id, room.name, room.owner_id, activate_room_id === room.id);
+      });
+    });
+  }
+
   function clear_room() {
     $('#chatroom-title').text('');
     $('.room-modal').addClass('d-none');
@@ -200,13 +205,13 @@ $(document).ready(() => {
       $('#chatroom-title').text(current_room_name);
       $('.current-room').text(current_room_name);
       update_delete_leave_button(current_username === current_room_owner);
-      render_messages(room.messages);
-      scroll_bottom('chat-box');
+      append_messages(room.messages);
+      scroll_to_bottom('chat-box');
     });
   }
 
-  function update_delete_leave_button(bool) {
-    if (bool) {
+  function update_delete_leave_button(is_delete) {
+    if (is_delete) {
       $('.delete-leave').text('Delete');
       $('i.fa-trash').removeClass('d-none');
       $('i.fa-sign-out').addClass('d-none');
@@ -225,27 +230,25 @@ $(document).ready(() => {
     });
   }
 
-  function scroll_bottom(id) {
+  function scroll_to_bottom(id) {
     const chat_box = document.getElementById(id);
     chat_box.scrollTop = chat_box.scrollHeight;
   }
 
-  function render_messages(messages) {
+  function append_messages(messages) {
     messages.forEach((msg) => {
       if (msg.username === current_username) {
-        append_receiver_chat_box(msg.message, msg.datetime);
+        append_receiver_message(msg.message, msg.datetime);
       } else {
-        append_sender_chat_box(msg.message, msg.datetime, msg.username);
+        append_sender_message(msg.message, msg.datetime, msg.username);
       }
     });
   }
 
-  function append_sender_chat_box(message, datetime, username) {
+  function append_sender_message(message, datetime, username) {
     $('div.chat-box').append(
       `
-            <div class="media w-50 mb-3"><img
-                    src="https://res.cloudinary.com/mhmd/image/upload/v1564960395/avatar_usae7z.svg" alt="user"
-                    width="50" class="rounded-circle">
+            <div class="media w-50 mb-3">
                 <div class="media-body ml-3">
                     <div class="bg-light rounded py-2 px-3 mb-2">
                         <p class="text-small font-weight-bold">${username}</p>
@@ -258,7 +261,7 @@ $(document).ready(() => {
     );
   }
 
-  function append_receiver_chat_box(message, datetime) {
+  function append_receiver_message(message, datetime) {
     $('div.chat-box').append(
       `
             <div class="media w-50 ml-auto mb-3">
@@ -271,15 +274,6 @@ $(document).ready(() => {
             </div>
             `,
     );
-  }
-
-  function load_room_list(activate_room_id = -1) {
-    $('div#room-list').empty();
-    fetch_room_list().then((rooms) => {
-      rooms.forEach((room) => {
-        append_room_list(room.id, room.name, room.owner_id, activate_room_id === room.id);
-      });
-    });
   }
 
   function append_room_list(id, name, owner_id, activate) {
