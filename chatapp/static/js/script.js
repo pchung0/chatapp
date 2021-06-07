@@ -248,49 +248,49 @@ $(document).ready(() => {
   function append_sender_message(message, datetime, username) {
     $('div.chat-box').append(
       `
-            <div class="media w-50 mb-3">
-                <div class="media-body ml-3">
-                    <div class="bg-light rounded py-2 px-3 mb-2">
-                        <p class="text-small font-weight-bold">${username}</p>
-                        <p class="text-small mb-0 text-muted">${message}</p>
-                    </div>
-                    <p class="small text-muted font-weight-light">${datetime}</p>
-                </div>
-            </div>
-            `,
+      <div class="media w-50 mb-3">
+        <div class="media-body ml-3">
+          <div class="bg-light rounded py-2 px-3 mb-2">
+            <p class="text-small font-weight-bold">${username}</p>
+            <p class="text-small mb-0 text-muted">${message}</p>
+          </div>
+          <p class="small text-muted font-weight-light">${datetime}</p>
+        </div>
+      </div>
+      `,
     );
   }
 
   function append_receiver_message(message, datetime) {
     $('div.chat-box').append(
       `
-            <div class="media w-50 ml-auto mb-3">
-                <div class="media-body">
-                    <div class="bg-primary rounded py-2 px-3 mb-2">
-                        <p class="text-small mb-0 text-white">${message}</p>
-                    </div>
-                    <p class="small text-muted">${datetime}</p>
-                </div>
-            </div>
-            `,
+      <div class="media w-50 ml-auto mb-3">
+        <div class="media-body">
+          <div class="bg-primary rounded py-2 px-3 mb-2">
+            <p class="text-small mb-0 text-white">${message}</p>
+          </div>
+          <p class="small text-muted">${datetime}</p>
+        </div>
+      </div>
+      `,
     );
   }
 
   function append_room_list(id, name, owner_id, activate) {
     $('div#room-list').append(
       `
-            <a href="${id}" class="${activate ? 'active ' : ''}room list-group-item list-group-item-action rounded-0"
-            data-room-id="${id}" data-room-name="${name}" data-room-owner-id="${owner_id}">
-                <div class="media">
-                    <div class="media-body ml-2">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <h6 class="mb-0">${name}</h6>
-                            <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
-                        </div>
-                    </div>
-                </div>
-            </a>
-            `,
+      <a href="${id}" class="${activate ? 'active ' : ''}room list-group-item list-group-item-action rounded-0"
+      data-room-id="${id}" data-room-name="${name}" data-room-owner-id="${owner_id}">
+        <div class="media">
+          <div class="media-body ml-2">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <h6 class="mb-0">${name}</h6>
+              <i class="fa fa-circle text-primary d-none" style="font-size:10px;"></i>
+            </div>
+          </div>
+        </div>
+      </a>
+      `,
     );
   }
 
