@@ -74,11 +74,11 @@ $(document).ready(() => {
   }
 
   function register_toggle_modal_events() {
-    $('.modal').on('shown.bs.modal', (event) => {
-      if ($(event.currentTarget).attr('id') === 'invite-modal') {
+    $('.modal').on('shown.bs.modal', (e) => {
+      if ($(e.currentTarget).attr('id') === 'invite-modal') {
         build_invite_dropdown();
       }
-      $(event.currentTarget).find('input').focus();
+      $(e.currentTarget).find('input').focus();
     });
 
     $('.modal').on('hidden.bs.modal', (e) => {
