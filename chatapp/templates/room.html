@@ -6,22 +6,12 @@
 </head>
 <!-- <body> -->
 <div class="container py-5 px-4">
-    <!-- For demo purpose-->
-    <!-- <header class="text-center">
-        <h1 class="display-4 text-white">Bootstrap Chat</h1>
-        <p class="text-white lead mb-0">An elegant chat widget compatible with Bootstrap 4</p>
-        <p class="text-white lead mb-4">Snippet by
-            <a href="https://bootstrapious.com" class="text-white">
-                <u>Bootstrapious</u></a>
-        </p>
-    </header> -->
     <h3 id="username" data-user-id="{{ current_user.id }}">{{ current_user.username }}</h3>
     <div class="row rounded-lg overflow-hidden shadow">
         <!-- Users box-->
         <div class="col-5 px-0 bg-white">
             <div class="bg-gray px-4 py-2 bg-light">
                 <div class="row">
-                    <!-- <p class="h5 mb-0 py-1">Recent</p> -->
                     <p id='chatroom-title' class="h5 mb-0 py-1 col" data-toggle="tooltip" title="Chatroom"></p>
 
                     <!-- Button trigger modal -->
@@ -35,8 +25,8 @@
                             <i class="fa fa-user-plus" data-toggle="tooltip" title="Invite people"></i>
                         </button>
                         <button type="button" class="btn btn-primary btn-sm d-none room-modal" data-toggle="modal" data-target="#confirm-delete">
-                            <!-- <span class="delete-leave">Delete</span> -->
-                            <i class="fa fa-trash d-none" data-toggle="tooltip" title="Delete the room"></i>
+                            <!-- Delete/Leave -->
+                            <i class="fa fa-trash" data-toggle="tooltip" title="Delete the room"></i>
                             <i class="fa fa-sign-out d-none" data-toggle="tooltip" title="Leave the room"></i>
                         </button>
                     </div>
@@ -109,14 +99,11 @@
                                     <span>Are you sure you want to <span class="delete-leave text-lowercase">delete</span> <span class="current-room font-weight-bold"></span></span>
                                 </div>
                                 <div class="modal-footer">
-                                    <!-- <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> -->
                                     <a class="btn btn-danger btn-ok text-white"><span class="delete-leave">Delete</span></a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -142,10 +129,6 @@
                     </div>
                 </div>
             </form>
-            <!-- <form id="message-form" action="" method="POST">
-                <input type="text" id="message-input-box" placeholder="Messages" />
-                <input type="submit" />
-            </form> -->
 
         </div>
     </div>

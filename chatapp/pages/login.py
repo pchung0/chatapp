@@ -22,7 +22,6 @@ class LoginPage(MethodView):
             user = User.query.filter_by(username=form.username.data).first()
             if user and check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                # flash('Login Suceed')
                 next_page = request.args.get('next')
                 if not next_page or url_parse(next_page).netloc != '':
                     next_page = url_for('home')
